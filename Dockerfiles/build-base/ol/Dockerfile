@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM oraclelinux:8-slim
+FROM oraclelinux:9-slim
 
 ARG MAJOR_VERSION=6.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.36
@@ -17,7 +17,7 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
       org.opencontainers.image.vendor="Zabbix SIA" \
       org.opencontainers.image.version="${ZBX_VERSION}"
 
-COPY ["conf/etc/yum.repos.d/oracle-epel-ol8.repo", "/etc/yum.repos.d/oracle-epel-ol8.repo"]
+COPY ["conf/etc/yum.repos.d/oracle-epel-ol9.repo", "/etc/yum.repos.d/oracle-epel-ol9.repo"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
@@ -43,23 +43,23 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             sqlite-devel \
             postgresql-private-devel \
             postgresql-server-devel \
-            java-17-openjdk-devel \
+            java-1.8.0-openjdk-devel \
             git \
             gettext \
             unixODBC-devel \
             zlib-devel" && \
     microdnf -y module enable \
         --disablerepo "*" \
-        --enablerepo "ol8_appstream" \
+        --enablerepo "ol9_appstream" \
         --setopt=install_weak_deps=0 \
         --setopt=keepcache=0 \
-        postgresql:16 mysql && \
+        postgresql:16 && \
     microdnf -y install \
         --disablerepo "*" \
-        --enablerepo "ol8_baseos_latest" \
-        --enablerepo "ol8_appstream" \
-        --enablerepo "ol8_codeready_builder" \
-        --enablerepo="ol8_developer_EPEL" \
+        --enablerepo "ol9_baseos_latest" \
+        --enablerepo "ol9_appstream" \
+        --enablerepo "ol9_codeready_builder" \
+        --enablerepo="ol9_developer_EPEL" \
         --setopt=install_weak_deps=0 \
         --setopt=keepcache=0 \
         --best \

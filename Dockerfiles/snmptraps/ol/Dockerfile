@@ -1,4 +1,4 @@
-FROM oraclelinux:8-slim
+FROM oraclelinux:9-slim
 
 ARG MAJOR_VERSION=6.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.36
@@ -28,8 +28,8 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             net-snmp" && \
     microdnf -y install \
             --disablerepo="*" \
-            --enablerepo="ol8_baseos_latest" \
-            --enablerepo="ol8_appstream" \
+            --enablerepo="ol9_baseos_latest" \
+            --enablerepo="ol9_appstream" \
             --setopt=install_weak_deps=0 \
             --setopt=keepcache=0 \
             --best \

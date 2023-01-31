@@ -5,7 +5,7 @@ ARG BUILD_BASE_IMAGE=zabbix-build-pgsql:ol-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM oraclelinux:8-slim
+FROM oraclelinux:9-slim
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
@@ -32,7 +32,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/sbin/zabbix_serve
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/*", "/usr/bin/"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/conf/", "/etc/zabbix/"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/database/postgresql/", "/usr/share/doc/zabbix-server-postgresql/"]
-COPY ["conf/etc/yum.repos.d/oracle-epel-ol8.repo", "/etc/yum.repos.d/oracle-epel-ol8.repo"]
+COPY ["conf/etc/yum.repos.d/oracle-epel-ol9.repo", "/etc/yum.repos.d/oracle-epel-ol9.repo"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
@@ -56,19 +56,20 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             postgresql \
             postgresql-private-libs \
             zlib \
+            gzip \
             unixODBC" && \
     microdnf -y module enable \
         --disablerepo "*" \
-        --enablerepo "ol8_baseos_latest" \
-        --enablerepo "ol8_appstream" \
+        --enablerepo "ol9_baseos_latest" \
+        --enablerepo "ol9_appstream" \
         --setopt=install_weak_deps=0 \
         --setopt=keepcache=0 \
         postgresql:16 && \
     microdnf -y install \
             --disablerepo="*" \
-            --enablerepo="ol8_baseos_latest" \
-            --enablerepo="ol8_appstream" \
-            --enablerepo="ol8_developer_EPEL" \
+            --enablerepo="ol9_baseos_latest" \
+            --enablerepo="ol9_appstream" \
+            --enablerepo="ol9_developer_EPEL" \
             --setopt=install_weak_deps=0 \
             --setopt=keepcache=0 \
             --best \
