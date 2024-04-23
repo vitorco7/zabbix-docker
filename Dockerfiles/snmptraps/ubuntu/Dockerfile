@@ -1,4 +1,4 @@
-FROM ubuntu:jammy
+FROM ubuntu:noble
 
 ARG MAJOR_VERSION=6.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.20
