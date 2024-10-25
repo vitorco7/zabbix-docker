@@ -61,12 +61,12 @@ services:
      - postgres-server
 
  db-data-mysql:
-  image: busybox
+  image: "${BUSYBOX_IMAGE:BUSYBOX_IMAGE_TAG}"
   volumes:
    - ${DATA_DIRECTORY}/var/lib/mysql:/var/lib/mysql:rw
 
  db-data-pgsql:
-  image: busybox
+  image: "${BUSYBOX_IMAGE:BUSYBOX_IMAGE_TAG}"
   attach: false
   volumes:
    - ${DATA_DIRECTORY}/var/lib/postgresql/data:/var/lib/postgresql/data:rw
