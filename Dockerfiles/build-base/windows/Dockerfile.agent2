@@ -92,14 +92,14 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     }; `
     `
     Write-Host ('Downloading {0} ...' -f $env:MINGW_URL); `
-    (new-object System.Net.WebClient).DownloadFile("""$env:MINGW_URL""","""$env:TEMP\mingw.7z"""); `
+    Invoke-RestMethod -Uri $env:MINGW_URL -OutFile $env:TEMP\mingw.7z; `
     `
-    $sha256 = 'e8c65ddc655534b0330f66f7b480565621e8617cda9937d76ba141a22bf3b2fa'; `
+    $sha256 = '55ed84e72dff790d424254c9f4b900dd7d0605ff200564258e3b88654214e440'; `
     $d_sha256 = (Get-FileHash $env:TEMP\mingw.7z -Algorithm sha256).Hash; `
     Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
     if ($d_sha256 -ne $sha256) { `
         Write-Host ('Checksum Mingw-w64 ({0}) failed!' -f $d_sha256); `
-#        exit 1; `
+        exit 1; `
     }; `
     `
     Write-Host ('Downloading {0} ...' -f $env:MSYS2_URL); `
