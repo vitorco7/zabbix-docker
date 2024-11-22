@@ -6,7 +6,7 @@ We kindly ask that when you are reporting a security issue, you follow the same 
 
 # Before reporting the issue:
 
-Make sure that the issue you are submitting is not related to server configuration, 3rd party scripts and utilities. In order to avoid any possible issues with server configuration we advise Zabbix users to read [Best practices for secure Zabbix setup](https://www.zabbix.com/documentation/current/manual/installation/requirements/best_practices).
+Make sure that the issue you are submitting is not related to server configuration, 3rd party scripts and utilities. In order to avoid any possible issues with server configuration we advise Zabbix users to read [Best practices for secure Zabbix setup](https://www.zabbix.com/documentation/7.0/en/manual/best_practices/security).
 
 # How to report a security issue?
 
