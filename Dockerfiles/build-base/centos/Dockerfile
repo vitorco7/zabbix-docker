@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM quay.io/centos/centos:stream8
+FROM quay.io/centos/centos:stream9-minimal
 
 ARG MAJOR_VERSION=6.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.36
@@ -19,7 +19,6 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
-    REPOLIST="baseos,appstream,powertools,epel" && \
     INSTALL_PKGS="autoconf \
             automake \
             bash \
@@ -47,24 +46,27 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             go-toolset \
             unixODBC-devel \
             zlib-devel" && \
-    dnf -y install \
+    microdnf -y install \
         --disablerepo "*" \
-        --enablerepo "extras" \
-        --setopt=tsflags=nodocs \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        --best epel-release && \
-    dnf -y module enable \
+        --enablerepo "extras-common" \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        --best \
+        --nodocs epel-release && \
+    microdnf -y module enable \
         --disablerepo "*" \
         --enablerepo "appstream" \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        postgresql:16 mysql && \
-    dnf -y install \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        postgresql:16 && \
+    microdnf -y install \
         --disablerepo "*" \
-        --enablerepo "${REPOLIST}" \
-        --setopt=tsflags=nodocs \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        --best ${INSTALL_PKGS} && \
-    dnf -y clean all
+        --enablerepo "baseos" \
+        --enablerepo "appstream" \
+        --enablerepo "crb" \
+        --enablerepo="epel" \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        --best \
+        --nodocs ${INSTALL_PKGS} && \
+    microdnf -y clean all

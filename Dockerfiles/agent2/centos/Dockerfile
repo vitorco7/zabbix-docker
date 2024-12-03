@@ -5,7 +5,7 @@ ARG BUILD_BASE_IMAGE=zabbix-build-mysql:centos-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM quay.io/centos/centos:stream8
+FROM quay.io/centos/centos:stream9-minimal
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
@@ -32,36 +32,38 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent2/conf/", "/etc/zab
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
-    REPOLIST="baseos,appstream,epel" && \
     INSTALL_PKGS="bash \
             tini \
             iputils \
             pcre2 \
             libcurl-minimal \
             smartmontools \
+            shadow-utils \
             sudo \
             openssl-libs" && \
-    dnf -y install \
+    microdnf -y install \
         --disablerepo "*" \
-        --enablerepo "extras" \
-        --setopt=tsflags=nodocs \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        --best epel-release && \
-    dnf -y install \
-        --disablerepo "*" \
-        --enablerepo "${REPOLIST}" \
-        --setopt=tsflags=nodocs \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        --best ${INSTALL_PKGS} && \
-    dnf -y reinstall \
+        --enablerepo "extras-common" \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        --best \
+        --nodocs epel-release && \
+    microdnf -y install \
         --disablerepo "*" \
         --enablerepo "baseos" \
+        --enablerepo "appstream" \
+        --enablerepo="epel" \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        --best \
+        --nodocs ${INSTALL_PKGS} && \
+    microdnf -y reinstall \
+        --enablerepo "baseos" \
+        --setopt=install_weak_deps=0 \
+        --setopt=keepcache=0 \
+        --best \
         --setopt=tsflags=nodocs \
-        --setopt=install_weak_deps=False \
-        --setopt=keepcache=False \
-        --best tzdata && \
+        tzdata && \
     groupadd \
             --system \
             --gid 1995 \
@@ -85,7 +87,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chown --quiet -R zabbix:root /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/ && \
     chgrp -R 0 /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/ && \
     chmod -R g=u /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/ && \
-    dnf -y clean all
+    microdnf -y clean all
 
 EXPOSE 10050/TCP 31999/TCP
 
