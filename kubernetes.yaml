@@ -1263,7 +1263,7 @@ spec:
             path: /var/run
             type: ''
 ---
-apiVersion: autoscaling/v2beta1
+apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: zabbix-web
@@ -1279,7 +1279,9 @@ spec:
   - type: Resource
     resource:
       name: cpu
-      targetAverageUtilization: 70
+      target:
+        type: Utilization
+        averageUtilization: 70
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
