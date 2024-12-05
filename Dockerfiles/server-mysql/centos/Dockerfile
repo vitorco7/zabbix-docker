@@ -43,8 +43,6 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             file-libs \
             iputils \
             traceroute \
-            libpsl \
-            libbrotli \
             libevent \
             libssh \
             libpsl \
