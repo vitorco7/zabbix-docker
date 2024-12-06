@@ -25,6 +25,8 @@ ZABBIX_ETC_DIR="/etc/zabbix"
 ZABBIX_WWW_ROOT="/usr/share/zabbix"
 # Apache main configuration file
 HTTPD_CONF_FILE="/etc/apache2/apache2.conf"
+# Apache security configuration file
+HTTPD_SECURITY_CONF_FILE="/etc/apache2/conf-enabled/security.conf"
 
 # usage: file_env VAR [DEFAULT]
 # as example: file_env 'MYSQL_PASSWORD' 'zabbix'
@@ -231,18 +233,18 @@ prepare_zbx_web_config() {
     fi
 
     : ${EXPOSE_WEB_SERVER_INFO:="on"}
-    if [ "${EXPOSE_WEB_SERVER_INFO}" = "off" ]; then
+    [[ "${EXPOSE_WEB_SERVER_INFO}" != "off" ]] && EXPOSE_WEB_SERVER_INFO="on"
+    export EXPOSE_WEB_SERVER_INFO=${EXPOSE_WEB_SERVER_INFO}
+
+    if [ "${EXPOSE_WEB_SERVER_INFO}" == "off" ]; then
         sed -i \
             -e "s/^\(\s*ServerTokens\).*\$/\1 Prod/g" \
-        "$HTTPD_CONF_FILE"
-    else
-        EXPOSE_WEB_SERVER_INFO="on"
+        "$HTTPD_SECURITY_CONF_FILE"
     fi
 
-    export EXPOSE_WEB_SERVER_INFO=${EXPOSE_WEB_SERVER_INFO}
     sed -i \
-        -e "s/^\(\s*ServerSignature\).*\$/\1 ${EXPOSE_WEB_SERVER_INFO^}/g" \
-    "$HTTPD_CONF_FILE"
+        -e "s/^\(\s*ServerSignature\).*\$/\1 ${EXPOSE_WEB_SERVER_INFO}/g" \
+    "$HTTPD_SECURITY_CONF_FILE"
 }
 
 #################################################
