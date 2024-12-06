@@ -50,7 +50,7 @@ RUN set -eux && \
             net-snmp-agent-libs \
             openipmi-libs \
             pcre2 \
-            postgresql16-client \
+            postgresql17-client \
             gzip \
             unixodbc \
             zlib" && \
