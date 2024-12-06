@@ -5,7 +5,7 @@ ARG BUILD_BASE_IMAGE=zabbix-build-pgsql:alpine-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM alpine:3.19
+FROM alpine:3.21
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
@@ -50,7 +50,7 @@ RUN set -eux && \
             php83-xmlreader \
             php83-xmlwriter \
             php83-openssl \
-            postgresql16-client" && \
+            postgresql17-client" && \
     apk add \
             --no-cache \
             --clean-protected \
