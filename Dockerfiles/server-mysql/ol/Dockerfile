@@ -57,6 +57,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             openssl-libs \
             pcre2 \
             zlib \
+            gzip \
             unixODBC" && \
     microdnf -y install \
             --disablerepo="*" \
