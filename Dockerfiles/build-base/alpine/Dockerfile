@@ -24,11 +24,8 @@ RUN set -eux && \
         x86) \
             openjdk_packages='openjdk8 openjdk8-jre-base'; \
             ;; \
-        armv7) \
-            openjdk_packages='openjdk8 openjdk8-jre-base'; \
-            ;; \
-        ppc64le) \
-            openjdk_packages='openjdk11 openjdk11-jre-headless'; \
+        riscv64) \
+            openjdk_packages='openjdk21 openjdk21-jre-headless'; \
             ;; \
         *) openjdk_packages='openjdk17 openjdk17-jre-headless'; \
     esac; \
