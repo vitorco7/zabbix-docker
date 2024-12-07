@@ -21,8 +21,8 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
 RUN set -eux && \
     ARCH_SUFFIX="$(cat /etc/apk/arch)"; \
     case "$ARCH_SUFFIX" in \
-        ppc64le) \
-            openjdk_packages='openjdk11 openjdk11-jre-headless'; \
+        riscv64) \
+            openjdk_packages='openjdk21 openjdk21-jre-headless'; \
             ;; \
         *) openjdk_packages='openjdk17 openjdk17-jre-headless'; \
     esac; \
