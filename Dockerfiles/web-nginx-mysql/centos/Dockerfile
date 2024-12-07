@@ -53,7 +53,8 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         --enablerepo "appstream" \
         --setopt=install_weak_deps=0 \
         --setopt=keepcache=0 \
-        php:8.2 && \
+        php:8.2 \
+        nginx:1.24 && \
     microdnf -y install \
         --disablerepo "*" \
         --enablerepo "extras-common" \
