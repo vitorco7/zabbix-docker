@@ -17,7 +17,7 @@ ARG CFLAGS
 
 LABEL description="Zabbix build base for SQLite3 based images" \
       maintainer="alexey.pustovalov@zabbix.com" \
-      name="zabbix/zabbix-build-sqlite3-trunk" \
+      name="zabbix/zabbix-build-sqlite3-72" \
       release="${RELEASE}" \
       summary="Zabbix build base (SQLite3)" \
       url="https://www.zabbix.com/" \

@@ -17,7 +17,7 @@ ARG CFLAGS
 
 LABEL description="Zabbix build base for MySQL based images" \
       maintainer="alexey.pustovalov@zabbix.com" \
-      name="zabbix/zabbix-build-mysql-trunk" \
+      name="zabbix/zabbix-build-mysql-72" \
       release="${RELEASE}" \
       summary="Zabbix build base (MySQL)" \
       url="https://www.zabbix.com/" \

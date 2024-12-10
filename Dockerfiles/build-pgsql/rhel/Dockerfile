@@ -17,7 +17,7 @@ ARG CFLAGS
 
 LABEL description="Zabbix build base for PostgreSQL based images" \
       maintainer="alexey.pustovalov@zabbix.com" \
-      name="zabbix/zabbix-build-pgsql-trunk" \
+      name="zabbix/zabbix-build-pgsql-72" \
       release="${RELEASE}" \
       summary="Zabbix build base (PostgreSQL)" \
       url="https://www.zabbix.com/" \
