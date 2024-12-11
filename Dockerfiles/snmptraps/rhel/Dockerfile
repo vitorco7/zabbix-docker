@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
 
 ARG MAJOR_VERSION=7.2
 ARG RELEASE=0
-ARG ZBX_VERSION=${MAJOR_VERSION}
+ARG ZBX_VERSION=${MAJOR_VERSION}.0
 
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
