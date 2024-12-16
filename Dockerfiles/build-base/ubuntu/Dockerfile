@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM ubuntu:noble
 
-ARG MAJOR_VERSION=7.2
+ARG MAJOR_VERSION=7.4
 ARG ZBX_VERSION=${MAJOR_VERSION}
 
 ENV TERM=xterm \
@@ -17,7 +17,8 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
       org.opencontainers.image.vendor="Zabbix SIA" \
       org.opencontainers.image.version="${ZBX_VERSION}"
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     INSTALL_PKGS="bash \
             autoconf \

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 FROM oraclelinux:9-slim
 
-ARG MAJOR_VERSION=7.2
+ARG MAJOR_VERSION=7.4
 ARG ZBX_VERSION=${MAJOR_VERSION}
 
 ENV TERM=xterm \
