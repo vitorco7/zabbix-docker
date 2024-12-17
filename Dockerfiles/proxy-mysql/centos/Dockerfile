@@ -35,7 +35,8 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/proxy/database/mysql/", 
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
-    INSTALL_PKGS="libevent \
+    INSTALL_PKGS="bash \
+            libevent \
             tini \
             traceroute \
             nmap \
