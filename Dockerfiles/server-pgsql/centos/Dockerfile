@@ -35,7 +35,8 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/database/postgres
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     set -eux && \
-    INSTALL_PKGS="fping \
+    INSTALL_PKGS="bash \
+            fping \
             file-libs \
             traceroute \
             hostname \
