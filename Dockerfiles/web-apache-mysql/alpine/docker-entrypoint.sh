@@ -123,8 +123,8 @@ check_db_connect() {
 
     export MYSQL_PWD="${DB_SERVER_ZBX_PASS}"
 
-    while [ ! "$(mysqladmin ping $mysql_connect_args -u ${DB_SERVER_ZBX_USER} \
-                --silent --connect_timeout=10 $ssl_opts)" ]; do
+    while [ ! "$(mariadb-admin ping $mysql_connect_args -u ${DB_SERVER_ZBX_USER} \
+                --silent --skip-ssl-verify-server-cert --connect_timeout=10 $ssl_opts)" ]; do
         echo "**** MySQL server is not available. Waiting $WAIT_TIMEOUT seconds..."
         sleep $WAIT_TIMEOUT
     done
