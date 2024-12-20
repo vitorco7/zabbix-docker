@@ -220,6 +220,10 @@ prepare_zbx_agent_plugin_config() {
     update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/postgresql.conf" "Plugins.PostgreSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/postgresql"
     update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/mssql.conf" "Plugins.MSSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/mssql"
     update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/ember.conf" "Plugins.EmberPlus.System.Path" "/usr/sbin/zabbix-agent2-plugin/ember-plus"
+    if command -v nvidia-smi 2>&1 >/dev/null
+    then
+        update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/nvidia.conf" "Plugins.NVIDIA.System.Path" "/usr/sbin/zabbix-agent2-plugin/nvidia-gpu"
+    fi
 }
 
 clear_zbx_env() {
