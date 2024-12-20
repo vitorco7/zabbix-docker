@@ -47,6 +47,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
             libcurl4t64 \
             libevent-2.1 \
             libevent-pthreads-2.1 \
+            libevent-extra-2.1 \
             libmysqlclient21 \
             libopenipmi0t64 \
             libpcre2-8-0 \
