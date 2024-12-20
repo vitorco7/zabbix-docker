@@ -251,8 +251,8 @@ check_db_connect_mysql() {
 
     export MYSQL_PWD="${DB_SERVER_ROOT_PASS}"
 
-    while [ ! "$(mysqladmin ping $mysql_connect_args -u ${DB_SERVER_ROOT_USER} \
-                --silent --connect_timeout=10 $ssl_opts)" ]; do
+    while [ ! "$(mariadb-admin ping $mysql_connect_args -u ${DB_SERVER_ROOT_USER} \
+                --silent --skip-ssl-verify-server-cert --connect_timeout=10 $ssl_opts)" ]; do
         echo "**** MySQL server is not available. Waiting $WAIT_TIMEOUT seconds..."
         sleep $WAIT_TIMEOUT
     done
@@ -268,7 +268,7 @@ mysql_query() {
 
     export MYSQL_PWD="${DB_SERVER_ROOT_PASS}"
 
-    result=$(mysql --silent --skip-column-names $mysql_connect_args \
+    result=$(mariadb --silent --skip-column-names --skip-ssl-verify-server-cert $mysql_connect_args \
              -u ${DB_SERVER_ROOT_USER} -e "$query" $ssl_opts)
 
     unset MYSQL_PWD
@@ -289,7 +289,7 @@ exec_sql_file() {
         command="zcat"
     fi
 
-    $command "$sql_script" | mysql --silent --skip-column-names \
+    $command "$sql_script" | mariadb --silent --skip-column-names --skip-ssl-verify-server-cert \
             --default-character-set=${DB_CHARACTER_SET} \
             $mysql_connect_args \
             -u ${DB_SERVER_ROOT_USER} $ssl_opts  \
