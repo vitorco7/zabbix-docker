@@ -1,4 +1,30 @@
 services:
+ server-db-init:
+  extends:
+   file: compose_zabbix_components.yaml
+   service: server-pgsql-db-init
+  image: "${ZABBIX_SERVER_PGSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+  volumes:
+   - /etc/timezone:/etc/timezone:ro
+  depends_on:
+   postgres-server:
+    condition: service_started
+  labels:
+   com.zabbix.os: "${CENTOS_OS_TAG}"
+
+ proxy-db-init:
+  extends:
+   file: compose_zabbix_components.yaml
+   service: proxy-mysql-db-init
+  image: "${ZABBIX_PROXY_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+  volumes:
+   - /etc/timezone:/etc/timezone:ro
+  depends_on:
+   mysql-server:
+    condition: service_started
+  labels:
+   com.zabbix.os: "${CENTOS_OS_TAG}"
+
  zabbix-server:
   extends:
    file: compose_zabbix_components.yaml
@@ -7,7 +33,8 @@ services:
   volumes:
    - /etc/timezone:/etc/timezone:ro
   depends_on:
-   - postgres-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${CENTOS_OS_TAG}"
 
@@ -29,7 +56,8 @@ services:
   volumes:
    - /etc/timezone:/etc/timezone:ro
   depends_on:
-   - mysql-server
+   proxy-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${CENTOS_OS_TAG}"
 
@@ -41,7 +69,8 @@ services:
   volumes:
    - /etc/timezone:/etc/timezone:ro
   depends_on:
-   - postgres-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${CENTOS_OS_TAG}"
 
@@ -53,7 +82,8 @@ services:
   volumes:
    - /etc/timezone:/etc/timezone:ro
   depends_on:
-   - postgres-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${CENTOS_OS_TAG}"
 
