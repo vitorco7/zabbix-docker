@@ -1,11 +1,34 @@
 services:
+ server-db-init:
+  extends:
+   file: compose_zabbix_components.yaml
+   service: server-mysql-db-init
+  image: "${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+  depends_on:
+   mysql-server:
+    condition: service_started
+  labels:
+   com.zabbix.os: "${UBUNTU_OS_TAG}"
+
+ proxy-db-init:
+  extends:
+   file: compose_zabbix_components.yaml
+   service: proxy-mysql-db-init
+  image: "${ZABBIX_PROXY_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
+  depends_on:
+   mysql-server:
+    condition: service_started
+  labels:
+   com.zabbix.os: "${UBUNTU_OS_TAG}"
+
  zabbix-server:
   extends:
    file: compose_zabbix_components.yaml
    service: server-mysql
   image: "${ZABBIX_SERVER_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   depends_on:
-   - mysql-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
@@ -23,7 +46,8 @@ services:
    service: proxy-mysql
   image: "${ZABBIX_PROXY_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   depends_on:
-   - mysql-server
+   proxy-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
@@ -33,7 +57,8 @@ services:
    service: web-apache-mysql
   image: "${ZABBIX_WEB_APACHE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   depends_on:
-   - mysql-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
@@ -43,7 +68,8 @@ services:
    service: web-nginx-mysql
   image: "${ZABBIX_WEB_NGINX_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_IMAGE_TAG_POSTFIX}"
   depends_on:
-   - mysql-server
+   server-db-init:
+    condition: service_completed_successfully
   labels:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
