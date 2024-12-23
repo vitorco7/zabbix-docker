@@ -259,7 +259,7 @@ networks:
 
 volumes:
   snmptraps:
-#  dbsocket:
+#  mysql_socket:
 
 secrets:
   MYSQL_USER:
