@@ -12,6 +12,7 @@ services:
    context: ./Dockerfiles/build-pgsql/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:
@@ -26,6 +27,7 @@ services:
    context: ./Dockerfiles/build-mysql/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:
@@ -40,6 +42,8 @@ services:
  zabbix-build-sqlite3:
   build:
    context: ./Dockerfiles/build-sqlite3/${CENTOS_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:

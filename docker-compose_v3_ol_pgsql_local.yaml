@@ -12,6 +12,7 @@ services:
    context: ./Dockerfiles/build-pgsql/${OL_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${OL_CACHE_FROM}"
    args:
@@ -26,6 +27,7 @@ services:
    context: ./Dockerfiles/build-mysql/${OL_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${OL_CACHE_FROM}"
    args:
@@ -42,6 +44,7 @@ services:
    context: ./Dockerfiles/build-sqlite3/${OL_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${OL_CACHE_FROM}"
    args:

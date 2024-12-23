@@ -11,15 +11,11 @@ fi
 
 # Default Zabbix installation name
 # Default Zabbix server host
-: ${ZBX_SERVER_HOST:="zabbix-server"}
+: ${ZBX_SERVER_HOST="zabbix-server"}
 # Default Zabbix server port number
-: ${ZBX_SERVER_PORT:="10051"}
+: ${ZBX_SERVER_PORT="10051"}
 
 # Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -124,112 +120,90 @@ file_process_from_env() {
         echo -n "$var_value" > "${ZABBIX_INTERNAL_ENC_DIR}/$var_name"
         file_name="${ZABBIX_INTERNAL_ENC_DIR}/${var_name}"
     fi
-    update_config_var $config_path "$var_name" "$file_name"
+
+    if [ -n "$var_value" ]; then
+        export "$var_name"="$file_name"
+    fi
+    # Remove variable with plain text data
+    unset "${var_name%%FILE}"
 }
 
 prepare_zbx_agent_config() {
-    echo "** Preparing Zabbix agent configuration file"
-    ZBX_AGENT_CONFIG=$ZABBIX_ETC_DIR/zabbix_agent2.conf
+    : ${ZBX_PASSIVESERVERS=""}
+    : ${ZBX_ACTIVESERVERS=""}
 
-    : ${ZBX_PASSIVESERVERS:=""}
-    : ${ZBX_ACTIVESERVERS:=""}
+    if [ ! -z "$ZBX_SERVER_HOST" ] && [ ! -z "$ZBX_PASSIVESERVERS" ]; then
+        ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST","$ZBX_PASSIVESERVERS
+    elif [ ! -z "$ZBX_SERVER_HOST" ]; then
+        ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST
+    fi
 
-    [ -n "$ZBX_PASSIVESERVERS" ] && ZBX_PASSIVESERVERS=","$ZBX_PASSIVESERVERS
-
-    ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST$ZBX_PASSIVESERVERS
-
-    [ -n "$ZBX_ACTIVESERVERS" ] && ZBX_ACTIVESERVERS=","$ZBX_ACTIVESERVERS
-
-    ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST":"$ZBX_SERVER_PORT$ZBX_ACTIVESERVERS
-
-    update_config_var $ZBX_AGENT_CONFIG "PidFile"
-    update_config_var $ZBX_AGENT_CONFIG "LogType" "console"
-    update_config_var $ZBX_AGENT_CONFIG "LogFile"
-    update_config_var $ZBX_AGENT_CONFIG "LogFileSize"
-    update_config_var $ZBX_AGENT_CONFIG "DebugLevel" "${ZBX_DEBUGLEVEL}"
-    update_config_var $ZBX_AGENT_CONFIG "SourceIP"
+    if [ ! -z "$ZBX_SERVER_HOST" ]; then
+        if [ ! -z "$ZBX_SERVER_PORT" ] && [ "$ZBX_SERVER_PORT" != "10051" ]; then
+            ZBX_SERVER_HOST=$ZBX_SERVER_HOST":"$ZBX_SERVER_PORT
+        fi
+        if [ ! -z "$ZBX_ACTIVESERVERS" ]; then
+            ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST","$ZBX_ACTIVESERVERS
+        else
+            ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST
+        fi
+    fi
 
     : ${ZBX_PASSIVE_ALLOW:="true"}
-    if [ "${ZBX_PASSIVE_ALLOW,,}" == "true" ]; then
+    if [ "${ZBX_PASSIVE_ALLOW,,}" == "true" ] && [ ! -z "$ZBX_PASSIVESERVERS" ]; then
         echo "** Using '$ZBX_PASSIVESERVERS' servers for passive checks"
-        update_config_var $ZBX_AGENT_CONFIG "Server" "${ZBX_PASSIVESERVERS}"
+        export ZBX_PASSIVESERVERS="${ZBX_PASSIVESERVERS}"
     else
-        update_config_var $ZBX_AGENT_CONFIG "Server"
+        unset ZBX_PASSIVESERVERS
     fi
-
-    update_config_var $ZBX_AGENT_CONFIG "ListenPort" "${ZBX_LISTENPORT}"
-    update_config_var $ZBX_AGENT_CONFIG "ListenIP" "${ZBX_LISTENIP}"
 
     : ${ZBX_ACTIVE_ALLOW:="true"}
-    if [ "${ZBX_ACTIVE_ALLOW,,}" == "true" ]; then
+    if [ "${ZBX_ACTIVE_ALLOW,,}" == "true" ] && [ ! -z "$ZBX_ACTIVESERVERS" ]; then
         echo "** Using '$ZBX_ACTIVESERVERS' servers for active checks"
-        update_config_var $ZBX_AGENT_CONFIG "ServerActive" "${ZBX_ACTIVESERVERS}"
+        export ZBX_ACTIVESERVERS="${ZBX_ACTIVESERVERS}"
     else
-        update_config_var $ZBX_AGENT_CONFIG "ServerActive"
+        unset ZBX_ACTIVESERVERS
     fi
-    update_config_var $ZBX_AGENT_CONFIG "HeartbeatFrequency" "${ZBX_HEARTBEAT_FREQUENCY}"
-    update_config_var $ZBX_AGENT_CONFIG "ForceActiveChecksOnStart" "${ZBX_FORCEACTIVECHECKSONSTART}"
+    unset ZBX_SERVER_HOST
+    unset ZBX_SERVER_PORT
 
     if [ "${ZBX_ENABLEPERSISTENTBUFFER,,}" == "true" ]; then
-        update_config_var $ZBX_AGENT_CONFIG "EnablePersistentBuffer" "1"
-        update_config_var $ZBX_AGENT_CONFIG "PersistentBufferFile" "$ZABBIX_USER_HOME_DIR/buffer/agent2.db"
-        update_config_var $ZBX_AGENT_CONFIG "PersistentBufferPeriod" "${ZBX_PERSISTENTBUFFERPERIOD}"
-    else
-        update_config_var $ZBX_AGENT_CONFIG "EnablePersistentBuffer" "0"
+        export ZBX_ENABLEPERSISTENTBUFFER=1
     fi
 
     if [ "${ZBX_ENABLESTATUSPORT,,}" == "true" ]; then
-        update_config_var $ZBX_AGENT_CONFIG "StatusPort" "31999"
+        export ZBX_STATUSPORT=${ZBX_STATUSPORT="31999"}
+    else
+        unset ZBX_PERSISTENTBUFFERFILE
     fi
 
-    update_config_var $ZBX_AGENT_CONFIG "HostInterface" "${ZBX_HOSTINTERFACE}"
-    update_config_var $ZBX_AGENT_CONFIG "HostInterfaceItem" "${ZBX_HOSTINTERFACEITEM}"
+    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf" "DenyKey" "${ZBX_DENYKEY}"
+    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf" "AllowKey" "${ZBX_ALLOWKEY}"
 
-    update_config_var $ZBX_AGENT_CONFIG "Hostname" "${ZBX_HOSTNAME}"
-    update_config_var $ZBX_AGENT_CONFIG "HostnameItem" "${ZBX_HOSTNAMEITEM}"
-    update_config_var $ZBX_AGENT_CONFIG "HostMetadata" "${ZBX_METADATA}"
-    update_config_var $ZBX_AGENT_CONFIG "HostMetadataItem" "${ZBX_METADATAITEM}"
-    update_config_var $ZBX_AGENT_CONFIG "RefreshActiveChecks" "${ZBX_REFRESHACTIVECHECKS}"
-    update_config_var $ZBX_AGENT_CONFIG "BufferSend" "${ZBX_BUFFERSEND}"
-    update_config_var $ZBX_AGENT_CONFIG "BufferSize" "${ZBX_BUFFERSIZE}"
-    # Please use include to enable Alias feature
-#    update_config_multiple_var $ZBX_AGENT_CONFIG "Alias" ${ZBX_ALIAS}
-    update_config_var $ZBX_AGENT_CONFIG "Timeout" "${ZBX_TIMEOUT}"
-    update_config_var $ZBX_AGENT_CONFIG "Include" "/etc/zabbix/zabbix_agent2.d/plugins.d/*.conf"
-    update_config_var $ZBX_AGENT_CONFIG "Include" "/etc/zabbix/zabbix_agentd.d/*.conf" "true"
-    update_config_var $ZBX_AGENT_CONFIG "UnsafeUserParameters" "${ZBX_UNSAFEUSERPARAMETERS}"
-    update_config_var $ZBX_AGENT_CONFIG "TLSConnect" "${ZBX_TLSCONNECT}"
-    update_config_var $ZBX_AGENT_CONFIG "TLSAccept" "${ZBX_TLSACCEPT}"
-    file_process_from_env $ZBX_AGENT_CONFIG "TLSCAFile" "${ZBX_TLSCAFILE}" "${ZBX_TLSCA}"
-    file_process_from_env $ZBX_AGENT_CONFIG "TLSCRLFile" "${ZBX_TLSCRLFILE}" "${ZBX_TLSCRL}"
-    update_config_var $ZBX_AGENT_CONFIG "TLSServerCertIssuer" "${ZBX_TLSSERVERCERTISSUER}"
-    update_config_var $ZBX_AGENT_CONFIG "TLSServerCertSubject" "${ZBX_TLSSERVERCERTSUBJECT}"
-    file_process_from_env $ZBX_AGENT_CONFIG "TLSCertFile" "${ZBX_TLSCERTFILE}" "${ZBX_TLSCERT}"
-    file_process_from_env $ZBX_AGENT_CONFIG "TLSKeyFile" "${ZBX_TLSKEYFILE}" "${ZBX_TLSKEY}"
-    update_config_var $ZBX_AGENT_CONFIG "TLSPSKIdentity" "${ZBX_TLSPSKIDENTITY}"
-    file_process_from_env $ZBX_AGENT_CONFIG "TLSPSKFile" "${ZBX_TLSPSKFILE}" "${ZBX_TLSPSK}"
-
-    update_config_multiple_var $ZBX_AGENT_CONFIG "DenyKey" "${ZBX_DENYKEY}"
-    update_config_multiple_var $ZBX_AGENT_CONFIG "AllowKey" "${ZBX_ALLOWKEY}"
+    file_process_from_env "ZBX_TLSCAFILE" "${ZBX_TLSCAFILE}" "${ZBX_TLSCA}"
+    file_process_from_env "ZBX_TLSCRLFILE" "${ZBX_TLSCRLFILE}" "${ZBX_TLSCRL}"
+    file_process_from_env "ZBX_TLSCERTFILE" "${ZBX_TLSCERTFILE}" "${ZBX_TLSCERT}"
+    file_process_from_env "ZBX_TLSKEYFILE" "${ZBX_TLSKEYFILE}" "${ZBX_TLSKEY}"
+    file_process_from_env "ZBX_TLSPSKFILE" "${ZBX_TLSPSKFILE}" "${ZBX_TLSPSK}"
 }
 
 prepare_zbx_agent_plugin_config() {
     echo "** Preparing Zabbix agent plugin configuration files"
 
-    update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/mongodb.conf" "Plugins.MongoDB.System.Path" "/usr/sbin/zabbix-agent2-plugin/mongodb"
-    update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/postgresql.conf" "Plugins.PostgreSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/postgresql"
-    update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/mssql.conf" "Plugins.MSSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/mssql"
-    update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/ember.conf" "Plugins.EmberPlus.System.Path" "/usr/sbin/zabbix-agent2-plugin/ember-plus"
+    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/mongodb.conf" "Plugins.MongoDB.System.Path" "/usr/sbin/zabbix-agent2-plugin/mongodb"
+    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/postgresql.conf" "Plugins.PostgreSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/postgresql"
+    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/mssql.conf" "Plugins.MSSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/mssql"
+    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/ember.conf" "Plugins.EmberPlus.System.Path" "/usr/sbin/zabbix-agent2-plugin/ember-plus"
     if command -v nvidia-smi 2>&1 >/dev/null
     then
-        update_config_var "/etc/zabbix/zabbix_agent2.d/plugins.d/nvidia.conf" "Plugins.NVIDIA.System.Path" "/usr/sbin/zabbix-agent2-plugin/nvidia-gpu"
+        update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/nvidia.conf" "Plugins.NVIDIA.System.Path" "/usr/sbin/zabbix-agent2-plugin/nvidia-gpu"
     fi
 }
 
 clear_zbx_env() {
     [[ "${ZBX_CLEAR_ENV}" == "false" ]] && return
 
-    for env_var in $(env | grep -E "^ZBX_"); do
+    for env_var in $(env | grep -E "^ZABBIX_"); do
         unset "${env_var%%=*}"
     done
 }
