@@ -118,7 +118,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
-    chmod g=u ${ZABBIX_CONF_DIR}
+    chmod g=u ${ZABBIX_CONF_DIR} && \
     microdnf -y clean all
 
 EXPOSE 10050/TCP 31999/TCP
