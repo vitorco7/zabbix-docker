@@ -18,7 +18,7 @@ services:
   volumes:
    - ${DATA_DIRECTORY}/var/lib/mysql:/var/lib/mysql:rw
    - ${ENV_VARS_DIRECTORY}/mysql_init/init_proxy_db.sql:/docker-entrypoint-initdb.d/mysql_init_proxy.sql:ro
-#   - dbsocket:/var/run/mysqld/
+#   - mysql_socket:/var/run/mysqld/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_mysql
    - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql_override
@@ -48,6 +48,7 @@ services:
    - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
    - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CERT_FILE:/run/secrets/server-cert.pem:ro
    - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/server-key.pem:ro
+#   - pgsql_socket:/var/run/postgresql/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
    - path: ${ENV_VARS_DIRECTORY}/.env_db_pgsql_override
