@@ -405,6 +405,8 @@ jobs:
         uses: redhat-actions/buildah-build@v2.13
         with:
           context: ${{ format('{0}/{1}/rhel', env.DOCKERFILES_DIRECTORY, matrix.build) }}
+          extra-args: |
+            --build-context config_templates=./config_templates/
           layers: false
           tags: ${{ steps.meta.outputs.tags }}
           containerfiles: |

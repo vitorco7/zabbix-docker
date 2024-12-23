@@ -9,11 +9,6 @@ if [ "${DEBUG_MODE,,}" == "true" ]; then
     set -o xtrace
 fi
 
-# Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -140,16 +135,20 @@ update_config_multiple_var() {
 }
 
 file_process_from_env() {
-    local config_path=$1
-    local var_name=$2
-    local file_name=$3
-    local var_value=$4
+    local var_name=$1
+    local file_name=$2
+    local var_value=$3
 
     if [ ! -z "$var_value" ]; then
         echo -n "$var_value" > "${ZABBIX_INTERNAL_ENC_DIR}/$var_name"
         file_name="${ZABBIX_INTERNAL_ENC_DIR}/${var_name}"
     fi
-    update_config_var $config_path "$var_name" "$file_name"
+
+    if [ -n "$var_value" ]; then
+        export "$var_name"="$file_name"
+    fi
+    # Remove variable with plain text data
+    unset "${var_name%%FILE}"
 }
 
 # Check prerequisites for MySQL database
@@ -188,6 +187,7 @@ check_variables_mysql() {
     # If root password is not specified use provided credentials
     : ${DB_SERVER_ROOT_USER:=${MYSQL_USER}}
     [ "${MYSQL_ALLOW_EMPTY_PASSWORD,,}" == "true" ] || DB_SERVER_ROOT_PASS=${DB_SERVER_ROOT_PASS:-${MYSQL_PASSWORD}}
+
     DB_SERVER_ZBX_USER=${MYSQL_USER:-"zabbix"}
     DB_SERVER_ZBX_PASS=${MYSQL_PASSWORD:-"zabbix"}
 
@@ -353,229 +353,50 @@ create_db_schema_mysql() {
 }
 
 update_zbx_config() {
-    echo "** Preparing Zabbix server configuration file"
+    export ZBX_DB_HOST="${DB_SERVER_HOST}"
+    export ZBX_DB_PORT="${DB_SERVER_PORT}"
+    export ZBX_DB_SOCKET="${DB_SERVER_SOCKET}"
 
-    ZBX_CONFIG=$ZABBIX_ETC_DIR/zabbix_server.conf
-
-    update_config_var $ZBX_CONFIG "ListenIP" "${ZBX_LISTENIP}"
-    update_config_var $ZBX_CONFIG "ListenPort" "${ZBX_LISTENPORT}"
-    update_config_var $ZBX_CONFIG "ListenBacklog" "${ZBX_LISTENBACKLOG}"
-
-    update_config_var $ZBX_CONFIG "SourceIP" "${ZBX_SOURCEIP}"
-    update_config_var $ZBX_CONFIG "LogType" "console"
-    update_config_var $ZBX_CONFIG "LogFile"
-    update_config_var $ZBX_CONFIG "LogFileSize"
-    update_config_var $ZBX_CONFIG "PidFile"
-
-    update_config_var $ZBX_CONFIG "DebugLevel" "${ZBX_DEBUGLEVEL}"
-
-    if [ -n "${ZBX_DBTLSCONNECT}" ]; then
-        update_config_var $ZBX_CONFIG "DBTLSConnect" "${ZBX_DBTLSCONNECT}"
-        update_config_var $ZBX_CONFIG "DBTLSCAFile" "${ZBX_DBTLSCAFILE}"
-        update_config_var $ZBX_CONFIG "DBTLSCertFile" "${ZBX_DBTLSCERTFILE}"
-        update_config_var $ZBX_CONFIG "DBTLSKeyFile" "${ZBX_DBTLSKEYFILE}"
-        update_config_var $ZBX_CONFIG "DBTLSCipher" "${ZBX_DBTLSCIPHER}"
-        update_config_var $ZBX_CONFIG "DBTLSCipher13" "${ZBX_DBTLSCIPHER13}"
-    fi
-
-    if [ ! -n "${DB_SERVER_SOCKET}" ]; then
-        update_config_var $ZBX_CONFIG "DBHost" "${DB_SERVER_HOST}"
-        update_config_var $ZBX_CONFIG "DBPort" "${DB_SERVER_PORT}"
-    else
-        update_config_var $ZBX_CONFIG "DBHost"
-        update_config_var $ZBX_CONFIG "DBPort"
-    fi
-    update_config_var $ZBX_CONFIG "DBSocket" "${DB_SERVER_SOCKET}"
-    update_config_var $ZBX_CONFIG "DBName" "${DB_SERVER_DBNAME}"
-    update_config_var $ZBX_CONFIG "DBSchema" "${DB_SERVER_SCHEMA}"
-
-    if [ -n "${ZBX_VAULT}" ] && [ -n "${ZBX_VAULTURL}" ]; then
-        update_config_var $ZBX_CONFIG "Vault" "${ZBX_VAULT}"
-        update_config_var $ZBX_CONFIG "VaultTLSCertFile" "${ZBX_VAULTTLSCERTFILE}"
-        update_config_var $ZBX_CONFIG "VaultTLSKeyFile" "${ZBX_VAULTTLSKEYFILE}"
-        update_config_var $ZBX_CONFIG "VaultPrefix" "${ZBX_VAULTPREFIX}"
-        update_config_var $ZBX_CONFIG "VaultURL" "${ZBX_VAULTURL}"
-        update_config_var $ZBX_CONFIG "VaultDBPath" "${ZBX_VAULTDBPATH}"
-
-        if [ -n "${ZBX_VAULTDBPATH}" ]; then
-            update_config_var $ZBX_CONFIG "DBUser"
-            update_config_var $ZBX_CONFIG "DBPassword"
-        else
-            update_config_var $ZBX_CONFIG "DBUser" "${DB_SERVER_ZBX_USER}"
-            update_config_var $ZBX_CONFIG "DBPassword" "${DB_SERVER_ZBX_PASS}"
-        fi
-    else
-        update_config_var $ZBX_CONFIG "Vault"
-        update_config_var $ZBX_CONFIG "VaultTLSCertFile"
-        update_config_var $ZBX_CONFIG "VaultTLSKeyFile"
-        update_config_var $ZBX_CONFIG "VaultPrefix"
-        update_config_var $ZBX_CONFIG "VaultURL"
-        update_config_var $ZBX_CONFIG "VaultDBPath"
-
-        update_config_var $ZBX_CONFIG "DBUser" "${DB_SERVER_ZBX_USER}"
-        update_config_var $ZBX_CONFIG "DBPassword" "${DB_SERVER_ZBX_PASS}"
-    fi
-
-    update_config_var $ZBX_CONFIG "AllowUnsupportedDBVersions" "${ZBX_ALLOWUNSUPPORTEDDBVERSIONS}"
-    update_config_var $ZBX_CONFIG "MaxConcurrentChecksPerPoller" "${ZBX_MAXCONCURRENTCHECKSPERPOLLER}"
-    update_config_var $ZBX_CONFIG "EnableGlobalScripts" "${ZBX_ENABLEGLOBALSCRIPTS}"
-
-    update_config_var $ZBX_CONFIG "StartReportWriters" "${ZBX_STARTREPORTWRITERS}"
-    : ${ZBX_WEBSERVICEURL:="http://zabbix-web-service:10053/report"}
-    update_config_var $ZBX_CONFIG "WebServiceURL" "${ZBX_WEBSERVICEURL}"
-
-    update_config_var $ZBX_CONFIG "HistoryStorageURL" "${ZBX_HISTORYSTORAGEURL}"
-    update_config_var $ZBX_CONFIG "HistoryStorageTypes" "${ZBX_HISTORYSTORAGETYPES}"
-    update_config_var $ZBX_CONFIG "HistoryStorageDateIndex" "${ZBX_HISTORYSTORAGEDATEINDEX}"
-
-    update_config_var $ZBX_CONFIG "StatsAllowedIP" "${ZBX_STATSALLOWEDIP}"
-
-    update_config_var $ZBX_CONFIG "StartPollers" "${ZBX_STARTPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartIPMIPollers" "${ZBX_STARTIPMIPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartPollersUnreachable" "${ZBX_STARTPOLLERSUNREACHABLE}"
-    update_config_var $ZBX_CONFIG "StartTrappers" "${ZBX_STARTTRAPPERS}"
-    update_config_var $ZBX_CONFIG "StartPingers" "${ZBX_STARTPINGERS}"
-    update_config_var $ZBX_CONFIG "StartDiscoverers" "${ZBX_STARTDISCOVERERS}"
-    update_config_var $ZBX_CONFIG "StartHistoryPollers" "${ZBX_STARTHISTORYPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartHTTPAgentPollers" "${ZBX_STARTHTTPAGENTPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartHTTPPollers" "${ZBX_STARTHTTPPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartODBCPollers" "${ZBX_STARTODBCPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartSNMPPollers" "${ZBX_STARTSNMPPOLLERS}"
-
-    update_config_var $ZBX_CONFIG "StartConnectors" "${ZBX_STARTCONNECTORS}"
-    update_config_var $ZBX_CONFIG "StartPreprocessors" "${ZBX_STARTPREPROCESSORS}"
-    update_config_var $ZBX_CONFIG "StartTimers" "${ZBX_STARTTIMERS}"
-    update_config_var $ZBX_CONFIG "StartEscalators" "${ZBX_STARTESCALATORS}"
-    update_config_var $ZBX_CONFIG "StartAgentPollers" "${ZBX_STARTAGENTPOLLERS}"
-    update_config_var $ZBX_CONFIG "StartAlerters" "${ZBX_STARTALERTERS}"
-    update_config_var $ZBX_CONFIG "StartTimers" "${ZBX_STARTTIMERS}"
-    update_config_var $ZBX_CONFIG "StartEscalators" "${ZBX_STARTESCALATORS}"
-
-    update_config_var $ZBX_CONFIG "StartLLDProcessors" "${ZBX_STARTLLDPROCESSORS}"
-
-    : ${ZBX_JAVAGATEWAY_ENABLE:="false"}
-    if [ "${ZBX_JAVAGATEWAY_ENABLE,,}" == "true" ]; then
-        update_config_var $ZBX_CONFIG "JavaGateway" "${ZBX_JAVAGATEWAY:-"zabbix-java-gateway"}"
-        update_config_var $ZBX_CONFIG "JavaGatewayPort" "${ZBX_JAVAGATEWAYPORT}"
-        update_config_var $ZBX_CONFIG "StartJavaPollers" "${ZBX_STARTJAVAPOLLERS:-"5"}"
-    else
-        update_config_var $ZBX_CONFIG "JavaGateway"
-        update_config_var $ZBX_CONFIG "JavaGatewayPort"
-        update_config_var $ZBX_CONFIG "StartJavaPollers"
-    fi
-
-    update_config_var $ZBX_CONFIG "StartVMwareCollectors" "${ZBX_STARTVMWARECOLLECTORS}"
-    update_config_var $ZBX_CONFIG "VMwareFrequency" "${ZBX_VMWAREFREQUENCY}"
-    update_config_var $ZBX_CONFIG "VMwarePerfFrequency" "${ZBX_VMWAREPERFFREQUENCY}"
-    update_config_var $ZBX_CONFIG "VMwareCacheSize" "${ZBX_VMWARECACHESIZE}"
-    update_config_var $ZBX_CONFIG "VMwareTimeout" "${ZBX_VMWARETIMEOUT}"
+    export ZBX_DB_NAME="${DB_SERVER_DBNAME}"
+    export ZBX_DB_USER="${DB_SERVER_ZBX_USER}"
+    export ZBX_DB_PASSWORD="${DB_SERVER_ZBX_PASS}"
 
     : ${ZBX_ENABLE_SNMP_TRAPS:="false"}
-    if [ "${ZBX_ENABLE_SNMP_TRAPS,,}" == "true" ]; then
-        update_config_var $ZBX_CONFIG "SNMPTrapperFile" "${ZABBIX_USER_HOME_DIR}/snmptraps/snmptraps.log"
-        update_config_var $ZBX_CONFIG "StartSNMPTrapper" "1"
-    else
-        update_config_var $ZBX_CONFIG "SNMPTrapperFile"
-        update_config_var $ZBX_CONFIG "StartSNMPTrapper"
-    fi
+    [[ "${ZBX_ENABLE_SNMP_TRAPS,,}" == "true" ]] && export ZBX_STARTSNMPTRAPPER=1
+    unset ZBX_ENABLE_SNMP_TRAPS
 
-    update_config_var $ZBX_CONFIG "SocketDir" "/tmp/"
+    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_server_modules.conf" "LoadModule" "${ZBX_LOADMODULE}"
 
-    update_config_var $ZBX_CONFIG "HousekeepingFrequency" "${ZBX_HOUSEKEEPINGFREQUENCY}"
-    update_config_var $ZBX_CONFIG "MaxHousekeeperDelete" "${ZBX_MAXHOUSEKEEPERDELETE}"
-    update_config_var $ZBX_CONFIG "ProblemHousekeepingFrequency" "${ZBX_PROBLEMHOUSEKEEPINGFREQUENCY}"
+    file_process_from_env "ZBX_TLSCAFILE" "${ZBX_TLSCAFILE}" "${ZBX_TLSCA}"
+    file_process_from_env "ZBX_TLSCRLFILE" "${ZBX_TLSCRLFILE}" "${ZBX_TLSCRL}"
 
-    update_config_var $ZBX_CONFIG "CacheSize" "${ZBX_CACHESIZE}"
-
-    update_config_var $ZBX_CONFIG "CacheUpdateFrequency" "${ZBX_CACHEUPDATEFREQUENCY}"
-
-    update_config_var $ZBX_CONFIG "StartDBSyncers" "${ZBX_STARTDBSYNCERS}"
-    update_config_var $ZBX_CONFIG "HistoryCacheSize" "${ZBX_HISTORYCACHESIZE}"
-    update_config_var $ZBX_CONFIG "HistoryIndexCacheSize" "${ZBX_HISTORYINDEXCACHESIZE}"
-
-    update_config_var $ZBX_CONFIG "TrendCacheSize" "${ZBX_TRENDCACHESIZE}"
-    update_config_var $ZBX_CONFIG "TrendFunctionCacheSize" "${ZBX_TRENDFUNCTIONCACHESIZE}"
-    update_config_var $ZBX_CONFIG "ValueCacheSize" "${ZBX_VALUECACHESIZE}"
-
-    update_config_var $ZBX_CONFIG "Timeout" "${ZBX_TIMEOUT}"
-    update_config_var $ZBX_CONFIG "TrapperTimeout" "${ZBX_TRAPPERTIMEOUT}"
-    update_config_var $ZBX_CONFIG "UnreachablePeriod" "${ZBX_UNREACHABLEPERIOD}"
-    update_config_var $ZBX_CONFIG "UnavailableDelay" "${ZBX_UNAVAILABLEDELAY}"
-    update_config_var $ZBX_CONFIG "UnreachableDelay" "${ZBX_UNREACHABLEDELAY}"
-
-    update_config_var $ZBX_CONFIG "AlertScriptsPath" "/usr/lib/zabbix/alertscripts"
-    update_config_var $ZBX_CONFIG "ExternalScripts" "/usr/lib/zabbix/externalscripts"
-
-    if [ -n "${ZBX_EXPORTFILESIZE}" ]; then
-        update_config_var $ZBX_CONFIG "ExportDir" "$ZABBIX_USER_HOME_DIR/export/"
-        update_config_var $ZBX_CONFIG "ExportFileSize" "${ZBX_EXPORTFILESIZE}"
-        update_config_var $ZBX_CONFIG "ExportType" "${ZBX_EXPORTTYPE}"
-    fi
-
-    update_config_var $ZBX_CONFIG "FpingLocation" "/usr/bin/fping"
-    update_config_var $ZBX_CONFIG "Fping6Location"
-
-    update_config_var $ZBX_CONFIG "SSHKeyLocation" "$ZABBIX_USER_HOME_DIR/ssh_keys"
-    update_config_var $ZBX_CONFIG "LogSlowQueries" "${ZBX_LOGSLOWQUERIES}"
-
-    update_config_var $ZBX_CONFIG "StartProxyPollers" "${ZBX_STARTPROXYPOLLERS}"
-    update_config_var $ZBX_CONFIG "ProxyConfigFrequency" "${ZBX_PROXYCONFIGFREQUENCY}"
-    update_config_var $ZBX_CONFIG "ProxyDataFrequency" "${ZBX_PROXYDATAFREQUENCY}"
-
-    update_config_var $ZBX_CONFIG "SSLCertLocation" "$ZABBIX_USER_HOME_DIR/ssl/certs/"
-    update_config_var $ZBX_CONFIG "SSLKeyLocation" "$ZABBIX_USER_HOME_DIR/ssl/keys/"
-    update_config_var $ZBX_CONFIG "SSLCALocation" "$ZABBIX_USER_HOME_DIR/ssl/ssl_ca/"
-    update_config_var $ZBX_CONFIG "LoadModulePath" "$ZABBIX_USER_HOME_DIR/modules/"
-    update_config_multiple_var $ZBX_CONFIG "LoadModule" "${ZBX_LOADMODULE}"
-
-    file_process_from_env $ZBX_CONFIG "TLSCAFile" "${ZBX_TLSCAFILE}" "${ZBX_TLSCA}"
-    file_process_from_env $ZBX_CONFIG "TLSCRLFile" "${ZBX_TLSCRLFILE}" "${ZBX_TLSCRL}"
-
-    file_process_from_env $ZBX_CONFIG "TLSCertFile" "${ZBX_TLSCERTFILE}" "${ZBX_TLSCERT}"
-    update_config_var $ZBX_CONFIG "TLSCipherAll" "${ZBX_TLSCIPHERALL}"
-    update_config_var $ZBX_CONFIG "TLSCipherAll13" "${ZBX_TLSCIPHERALL13}"
-    update_config_var $ZBX_CONFIG "TLSCipherCert" "${ZBX_TLSCIPHERCERT}"
-    update_config_var $ZBX_CONFIG "TLSCipherCert13" "${ZBX_TLSCIPHERCERT13}"
-    update_config_var $ZBX_CONFIG "TLSCipherPSK" "${ZBX_TLSCIPHERPSK}"
-    update_config_var $ZBX_CONFIG "TLSCipherPSK13" "${ZBX_TLSCIPHERPSK13}"
-    file_process_from_env $ZBX_CONFIG "TLSKeyFile" "${ZBX_TLSKEYFILE}" "${ZBX_TLSKEY}"
-
-    update_config_var $ZBX_CONFIG "ServiceManagerSyncFrequency" "${ZBX_SERVICEMANAGERSYNCFREQUENCY}"
-    update_config_var $ZBX_CONFIG "AllowSoftwareUpdateCheck" "${ZBX_ALLOWSOFTWAREUPDATECHECK}"
-
-    update_config_var $ZBX_CONFIG "SMSDevices" "${ZBX_SMSDEVICES}"
+    file_process_from_env "ZBX_TLSCERTFILE" "${ZBX_TLSCERTFILE}" "${ZBX_TLSCERT}"
+    file_process_from_env "ZBX_TLSKEYFILE" "${ZBX_TLSKEYFILE}" "${ZBX_TLSKEY}"
 
     if [ "${ZBX_AUTOHANODENAME}" == 'fqdn' ] && [ ! -n "${ZBX_HANODENAME}" ]; then
-        update_config_var $ZBX_CONFIG "HANodeName" "$(hostname -f)"
+        export ZBX_HANODENAME="$(hostname -f)"
     elif [ "${ZBX_AUTOHANODENAME}" == 'hostname' ] && [ ! -n "${ZBX_HANODENAME}" ]; then
-        update_config_var $ZBX_CONFIG "HANodeName" "$(hostname)"
-    else
-        update_config_var $ZBX_CONFIG "HANodeName" "${ZBX_HANODENAME}"
+        export ZBX_HANODENAME="$(hostname)"
     fi
 
     : ${ZBX_NODEADDRESSPORT:="10051"}
     if [ "${ZBX_AUTONODEADDRESS}" == 'fqdn' ] && [ ! -n "${ZBX_NODEADDRESS}" ]; then
-        update_config_var $ZBX_CONFIG "NodeAddress" "$(hostname -f):${ZBX_NODEADDRESSPORT}"
+        export ZBX_NODEADDRESS="$(hostname -f):${ZBX_NODEADDRESSPORT}"
     elif [ "${ZBX_AUTONODEADDRESS}" == 'hostname' ] && [ ! -n "${ZBX_NODEADDRESS}" ]; then
-        update_config_var $ZBX_CONFIG "NodeAddress" "$(hostname):${ZBX_NODEADDRESSPORT}"
-    else
-        update_config_var $ZBX_CONFIG "NodeAddress" "${ZBX_NODEADDRESS}"
+        export ZBX_NODEADDRESS="$(hostname):${ZBX_NODEADDRESSPORT}"
     fi
 
     if [ "$(id -u)" != '0' ]; then
-        update_config_var $ZBX_CONFIG "User" "$(whoami)"
+        export ZBX_USER="$(whoami)"
     else
-        update_config_var $ZBX_CONFIG "AllowRoot" "1"
+        export ZBX_ALLOWROOT=1
     fi
-
-    update_config_var $ZBX_CONFIG "WebDriverURL" "${ZBX_WEBDRIVERURL}"
-    update_config_var $ZBX_CONFIG "StartBrowserPollers" "${ZBX_STARTBROWSERPOLLERS}"
 }
 
 clear_zbx_env() {
     [[ "${ZBX_CLEAR_ENV}" == "false" ]] && return
 
-    for env_var in $(env | grep -E "^(ZBX|DB|MYSQL)_"); do
+    for env_var in $(env | grep -E "^(ZABBIX|DB|MYSQL)_"); do
         unset "${env_var%%=*}"
     done
 }

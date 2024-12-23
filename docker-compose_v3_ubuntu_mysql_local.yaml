@@ -10,6 +10,8 @@ services:
  zabbix-build-mysql:
   build:
    context: ./Dockerfiles/build-mysql/${UBUNTU_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${UBUNTU_CACHE_FROM}"
    args:
@@ -22,6 +24,8 @@ services:
  zabbix-build-sqlite3:
   build:
    context: ./Dockerfiles/build-sqlite3/${UBUNTU_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${UBUNTU_CACHE_FROM}"
    args:

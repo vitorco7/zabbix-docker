@@ -35,7 +35,8 @@ ENV ZBX_SOURCES_DIR=/tmp/zabbix-${ZBX_VERSION} ZBX_OUTPUT_DIR=/tmp/zabbix-${ZBX_
 RUN --mount=type=cache,target=/root/.cache/go-build/ \
     --mount=type=cache,target=/root/go/ \
     --mount=type=bind,source=src/,target=/tmp/src \
-    --mount=type=bind,source=conf/chromedp_no_sandbox.patch,target=/tmp/chromedp_no_sandbox.patch \
+    --mount=type=bind,source=patches/,target=/tmp/patches \
+    --mount=from=config_templates,target=/tmp/conf \
     set -eux && \
     cd /tmp/ && \
     mkdir -p ${ZBX_OUTPUT_DIR}/agent/sbin/ && \
@@ -61,7 +62,11 @@ RUN --mount=type=cache,target=/root/.cache/go-build/ \
         git -c advice.detachedHead=false clone ${ZBX_SOURCES} --branch ${GIT_BRANCH:-$ZBX_VERSION} --depth 1 --single-branch ${ZBX_SOURCES_DIR}; \
     fi && \
     cd ${ZBX_SOURCES_DIR} && \
-    patch -p1 < /tmp/chromedp_no_sandbox.patch && \
+    for patch_filename in /tmp/patches/*.patch; do \
+        if [ -f "$patch_filename" ]; then \
+            patch -p1 < $patch_filename; \
+        fi \
+    done && \
     zabbix_revision=`git rev-parse --short HEAD` && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" include/version.h && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" src/go/pkg/version/version.go && \
@@ -117,19 +122,24 @@ RUN --mount=type=cache,target=/root/.cache/go-build/ \
     strip ${ZBX_SOURCES_DIR}/src/zabbix_sender/zabbix_sender && \
     strip ${ZBX_SOURCES_DIR}/src/go/bin/zabbix_web_service && \
     cp ${ZBX_SOURCES_DIR}/src/zabbix_agent/zabbix_agentd ${ZBX_OUTPUT_DIR}/agent/sbin/ && \
-    cp ${ZBX_SOURCES_DIR}/conf/zabbix_agentd.conf ${ZBX_OUTPUT_DIR}/agent/conf/ && \
+    cp ${ZBX_SOURCES_DIR}/conf/zabbix_agentd.conf ${ZBX_OUTPUT_DIR}/agent/conf/zabbix_agentd.conf_template && \
     cp -R ${ZBX_SOURCES_DIR}/conf/zabbix_agentd/ ${ZBX_OUTPUT_DIR}/agent/conf/ && \
+    cp /tmp/conf/agent/* ${ZBX_OUTPUT_DIR}/agent/conf/ && \
     cp ${ZBX_SOURCES_DIR}/src/go/bin/zabbix_agent2 ${ZBX_OUTPUT_DIR}/agent2/sbin/ && \
-    cp ${ZBX_SOURCES_DIR}/src/go/conf/zabbix_agent2.conf ${ZBX_OUTPUT_DIR}/agent2/conf/ && \
+    cp ${ZBX_SOURCES_DIR}/src/go/conf/zabbix_agent2.conf ${ZBX_OUTPUT_DIR}/agent2/conf/zabbix_agent2.conf_template && \
+    cp /tmp/conf/agent2/* ${ZBX_OUTPUT_DIR}/agent2/conf/ && \
     cp -R ${ZBX_SOURCES_DIR}/src/go/conf/zabbix_agent2.d/ ${ZBX_OUTPUT_DIR}/agent2/conf/ && \
     cp ${ZBX_SOURCES_DIR}/src/zabbix_server/zabbix_server ${ZBX_OUTPUT_DIR}/server/sbin/ && \
-    cp ${ZBX_SOURCES_DIR}/conf/zabbix_server.conf ${ZBX_OUTPUT_DIR}/server/conf/ && \
+    cp ${ZBX_SOURCES_DIR}/conf/zabbix_server.conf ${ZBX_OUTPUT_DIR}/server/conf/zabbix_server.conf_template && \
+    cp /tmp/conf/server/* ${ZBX_OUTPUT_DIR}/server/conf/ && \
     cp ${ZBX_SOURCES_DIR}/src/zabbix_proxy/zabbix_proxy ${ZBX_OUTPUT_DIR}/proxy/sbin/ && \
-    cp ${ZBX_SOURCES_DIR}/conf/zabbix_proxy.conf ${ZBX_OUTPUT_DIR}/proxy/conf/ && \
+    cp ${ZBX_SOURCES_DIR}/conf/zabbix_proxy.conf ${ZBX_OUTPUT_DIR}/proxy/conf/zabbix_proxy.conf_template && \
+    cp /tmp/conf/proxy/* ${ZBX_OUTPUT_DIR}/proxy/conf/ && \
     cp -R ${ZBX_SOURCES_DIR}/src/zabbix_java/bin/ ${ZBX_OUTPUT_DIR}/java_gateway/sbin/ && \
     cp -R ${ZBX_SOURCES_DIR}/src/zabbix_java/lib/ ${ZBX_OUTPUT_DIR}/java_gateway/sbin/ && \
     cp ${ZBX_SOURCES_DIR}/src/go/bin/zabbix_web_service ${ZBX_OUTPUT_DIR}/web_service/sbin/ && \
-    cp ${ZBX_SOURCES_DIR}/src/go/conf/zabbix_web_service.conf ${ZBX_OUTPUT_DIR}/web_service/conf/ && \
+    cp ${ZBX_SOURCES_DIR}/src/go/conf/zabbix_web_service.conf ${ZBX_OUTPUT_DIR}/web_service/conf/zabbix_web_service.conf_template && \
+    cp /tmp/conf/web_service/* ${ZBX_OUTPUT_DIR}/web_service/conf/ && \
     cp ${ZBX_SOURCES_DIR}/src/zabbix_get/zabbix_get ${ZBX_OUTPUT_DIR}/general/bin/ && \
     cp ${ZBX_SOURCES_DIR}/src/zabbix_sender/zabbix_sender ${ZBX_OUTPUT_DIR}/general/bin/ && \
     make -s distclean && \

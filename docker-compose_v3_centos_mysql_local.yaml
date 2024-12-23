@@ -2,6 +2,8 @@ services:
  zabbix-build-base:
   build:
    context: ./Dockerfiles/build-base/${CENTOS_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -10,6 +12,8 @@ services:
  zabbix-build-mysql:
   build:
    context: ./Dockerfiles/build-mysql/${CENTOS_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:
@@ -22,6 +26,8 @@ services:
  zabbix-build-sqlite3:
   build:
    context: ./Dockerfiles/build-sqlite3/${CENTOS_OS_TAG_SHORT}
+   additional_contexts:
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:
