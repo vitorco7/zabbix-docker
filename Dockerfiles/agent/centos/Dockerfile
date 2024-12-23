@@ -80,6 +80,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     mkdir -p /var/lib/zabbix/enc && \
     mkdir -p /var/lib/zabbix/enc_internal && \
     mkdir -p /var/lib/zabbix/modules && \
+    mkdir -p /var/lib/zabbix/user_scripts && \
     chown --quiet -R zabbix:root /etc/zabbix/ /var/lib/zabbix/ && \
     chgrp -R 0 /etc/zabbix/ /var/lib/zabbix/ && \
     chmod -R g=u /etc/zabbix/ /var/lib/zabbix/ && \
