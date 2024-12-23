@@ -114,7 +114,7 @@ services:
   extends:
    service: server
 #  volumes:
-#   - dbsocket:/var/run/mysqld/
+#   - mysql_socket:/var/run/mysqld/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_mysql
   secrets:
@@ -138,6 +138,7 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CERT_FILE:/run/secrets/client-cert.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
+#   - pgsql_socket:/var/run/postgresql
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
   secrets:
@@ -257,7 +258,7 @@ services:
      protocol: tcp
      app_protocol: zabbix-trapper
 #  volumes:
-#   - dbsocket:/var/run/mysqld/
+#   - mysql_socket:/var/run/mysqld/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_mysql_proxy
    - ${ENV_VARS_DIRECTORY}/.env_prx_mysql
@@ -335,7 +336,7 @@ services:
   extends:
    service: web-apache
 #  volumes:
-#   - dbsocket:/var/run/mysqld/
+#   - mysql_socket:/var/run/mysqld/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_mysql
   secrets:
@@ -355,6 +356,7 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CERT_FILE:/run/secrets/client-cert.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
+#   - pgsql_socket:/var/run/postgresql
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
   secrets:
@@ -421,7 +423,7 @@ services:
   extends:
    service: web-nginx
 #  volumes:
-#   - dbsocket:/var/run/mysqld/
+#   - mysql_socket:/var/run/mysqld/
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_mysql
   secrets:
@@ -445,6 +447,7 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CA_FILE:/run/secrets/root-ca.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_CERT_FILE:/run/secrets/client-cert.pem:ro
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
+#   - pgsql_socket:/var/run/postgresql
   env_file:
    - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
   secrets:

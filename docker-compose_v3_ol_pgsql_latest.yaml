@@ -198,7 +198,8 @@ networks:
 
 volumes:
   snmptraps:
-#  dbsocket:
+#  mysql_socket:
+#  pgsql_socket:
 
 secrets:
   MYSQL_USER:
