@@ -433,6 +433,10 @@ services:
      published: "${ZABBIX_AGENT2_PORT}"
      protocol: tcp
      app_protocol: zabbix-agent
+   - name: zabbix-agent-status
+     target: 31999
+     published: "${ZABBIX_AGENT2_STATUS_PORT}"
+     protocol: tcp
   restart: "${RESTART_POLICY}"
   attach: false
   volumes:
