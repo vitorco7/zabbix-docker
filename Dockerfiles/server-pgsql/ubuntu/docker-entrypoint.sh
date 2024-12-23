@@ -372,9 +372,6 @@ create_db_schema_postgresql() {
 }
 
 update_zbx_config() {
-    local type=$1
-    local db_type=$2
-
     echo "** Preparing Zabbix server configuration file"
 
     ZBX_CONFIG=$ZABBIX_ETC_DIR/zabbix_server.conf
