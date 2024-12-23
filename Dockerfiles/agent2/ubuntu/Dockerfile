@@ -73,7 +73,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     apt-get -y autoremove && \
     apt-get -y clean
 
-EXPOSE 10050/TCP
+EXPOSE 10050/TCP 31999/TCP
 
 WORKDIR /var/lib/zabbix
 
