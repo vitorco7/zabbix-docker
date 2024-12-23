@@ -65,6 +65,7 @@ RUN set -eux && \
     mkdir -p /var/lib/zabbix/enc_internal && \
     mkdir -p /var/lib/zabbix/modules && \
     mkdir -p /var/lib/zabbix/buffer && \
+    mkdir -p /var/lib/zabbix/user_scripts && \
     chown --quiet -R zabbix:root /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/ && \
     chgrp -R 0 /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/ && \
     chmod -R g=u /etc/zabbix/ /var/lib/zabbix/ /usr/sbin/zabbix-agent2-plugin/

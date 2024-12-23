@@ -399,6 +399,7 @@ services:
    - ${DATA_DIRECTORY}/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
    - ${DATA_DIRECTORY}/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
    - ${DATA_DIRECTORY}/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - ${DATA_DIRECTORY}/var/lib/zabbix/user_scripts:/var/lib/zabbix/user_scripts:ro
   tmpfs: /tmp
   deploy:
    resources:
@@ -448,6 +449,7 @@ services:
    - ${DATA_DIRECTORY}/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
    - ${DATA_DIRECTORY}/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
    - ${DATA_DIRECTORY}/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+   - ${DATA_DIRECTORY}/var/lib/zabbix/user_scripts:/var/lib/zabbix/user_scripts:ro
   tmpfs: /tmp
   deploy:
    resources:
