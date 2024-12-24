@@ -37,7 +37,7 @@ LABEL org.opencontainers.image.title="Zabbix server (PostgreSQL)" \
       org.opencontainers.image.version="${ZBX_VERSION}" \
       org.opencontainers.image.source="${ZBX_SOURCES}"
 
-STOP]SIGNAL SIGTERM
+STOPSIGNAL SIGTERM
 
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/sbin/zabbix_server", "/usr/sbin/zabbix_server"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/*", "/usr/bin/"]
