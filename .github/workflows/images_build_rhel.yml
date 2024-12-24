@@ -412,6 +412,7 @@ jobs:
           build-args: BUILD_BASE_IMAGE=${{ steps.base_build.outputs.base_build_image }}
           extra-args: |
             --iidfile=${{ github.workspace }}/iidfile
+            --build-context sources=./sources/
 
       - name: Prepare image metadata
         id: image_metadata
