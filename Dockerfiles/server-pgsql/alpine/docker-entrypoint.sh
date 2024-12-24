@@ -185,7 +185,7 @@ check_variables_postgresql() {
 
 check_db_connect_postgresql() {
     echo "********************"
-    if [[ "$DB_SERVER_HOST" != '""' ]]; then
+    if [ -n "${DB_SERVER_HOST}" ]; then
         echo "* DB_SERVER_HOST: ${DB_SERVER_HOST}"
         echo "* DB_SERVER_PORT: ${DB_SERVER_PORT}"
     else
