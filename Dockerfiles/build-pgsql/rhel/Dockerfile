@@ -45,14 +45,9 @@ ENV ZBX_SOURCES_DIR=/tmp/zabbix-${ZBX_VERSION} ZBX_OUTPUT_DIR=/tmp/zabbix-${ZBX_
 
 RUN --mount=type=cache,target=/root/.cache/go-build/ \
     --mount=type=cache,target=/root/go/ \
-<<<<<<< HEAD
-    --mount=type=bind,source=src/,target=/tmp/src \
+    --mount=from=sources,target=/tmp/src \
     --mount=type=bind,source=patches/,target=/tmp/patches \
     --mount=from=config_templates,target=/tmp/conf \
-=======
-    --mount=from=sources,target=/tmp/src \
-    --mount=type=bind,source=conf/chromedp_no_sandbox.patch,target=/tmp/chromedp_no_sandbox.patch \
->>>>>>> b0f7df6f6 (Move sources directory and introduce additional build context)
     set -eux && \
     cd /tmp/ && \
     mkdir -p ${ZBX_OUTPUT_DIR}/agent/sbin/ && \

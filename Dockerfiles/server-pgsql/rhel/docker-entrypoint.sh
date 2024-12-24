@@ -179,7 +179,6 @@ check_variables_postgresql() {
     if [ -n "${DB_SERVER_HOST}" ]; then
         psql_connect_args="--host ${DB_SERVER_HOST} --port ${DB_SERVER_PORT}"
     else
-        DB_SERVER_HOST='""'
         psql_connect_args="--port ${DB_SERVER_PORT}"
     fi
 }
