@@ -145,16 +145,14 @@ services:
 networks:
   frontend:
     driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "${FRONTEND_ENABLE_IPV6}"
+    enable_ipv6: "${FRONTEND_ENABLE_IPV6}"
     ipam:
       driver: "${FRONTEND_NETWORK_DRIVER}"
       config:
       - subnet: "${FRONTEND_SUBNET}"
   backend:
     driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "${BACKEND_ENABLE_IPV6}"
+    enable_ipv6: "${BACKEND_ENABLE_IPV6}"
     internal: true
     ipam:
       driver: "${BACKEND_NETWORK_DRIVER}"
@@ -162,8 +160,7 @@ networks:
       - subnet: "${BACKEND_SUBNET}"
   database:
     driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "${DATABASE_NETWORK_ENABLE_IPV6}"
+    enable_ipv6: "${DATABASE_NETWORK_ENABLE_IPV6}"
     internal: true
     ipam:
       driver: "${DATABASE_NETWORK_DRIVER}"
