@@ -11,8 +11,8 @@ services:
   build:
    context: ./Dockerfiles/build-mysql/${OL_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${OL_CACHE_FROM}"
    args:
@@ -26,8 +26,8 @@ services:
   build:
    context: ./Dockerfiles/build-sqlite3/${OL_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${OL_CACHE_FROM}"
    args:

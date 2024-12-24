@@ -11,8 +11,8 @@ services:
   build:
    context: ./Dockerfiles/build-pgsql/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:
@@ -26,8 +26,8 @@ services:
   build:
    context: ./Dockerfiles/build-mysql/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${CENTOS_CACHE_FROM}"
    args:

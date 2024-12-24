@@ -11,8 +11,8 @@ services:
   build:
    context: ./Dockerfiles/build-pgsql/${ALPINE_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${ALPINE_CACHE_FROM}"
    args:
@@ -26,8 +26,8 @@ services:
   build:
    context: ./Dockerfiles/build-mysql/${ALPINE_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${ALPINE_CACHE_FROM}"
    args:
@@ -43,8 +43,8 @@ services:
   build:
    context: ./Dockerfiles/build-sqlite3/${ALPINE_OS_TAG_SHORT}
    additional_contexts:
-    - config_templates=./config_templates/
     - sources=./sources/
+    - config_templates=./config_templates/
    cache_from:
     - "${ALPINE_CACHE_FROM}"
    args:
