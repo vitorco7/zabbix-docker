@@ -413,6 +413,7 @@ jobs:
           extra-args: |
             --iidfile=${{ github.workspace }}/iidfile
             --build-context config_templates=./config_templates/
+            --build-context sources=./sources/
 
       - name: Prepare image metadata
         id: image_metadata
