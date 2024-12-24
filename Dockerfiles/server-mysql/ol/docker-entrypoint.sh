@@ -10,10 +10,6 @@ if [ "${DEBUG_MODE,,}" == "true" ]; then
 fi
 
 # Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -348,14 +344,14 @@ create_db_schema_mysql() {
 
         exec_sql_file "/usr/share/doc/zabbix-server-mysql/create.sql.gz"
 
-        apply_db_scripts "/var/lib/zabbix/dbscripts/*.sql"
+        apply_db_scripts "${ZABBIX_USER_HOME_DIR}/dbscripts/*.sql"
     fi
 }
 
 update_zbx_config() {
     echo "** Preparing Zabbix server configuration file"
 
-    ZBX_CONFIG=$ZABBIX_ETC_DIR/zabbix_server.conf
+    ZBX_CONFIG=$ZABBIX_CONF_DIR/zabbix_server.conf
 
     update_config_var $ZBX_CONFIG "ListenIP" "${ZBX_LISTENIP}"
     update_config_var $ZBX_CONFIG "ListenPort" "${ZBX_LISTENPORT}"
