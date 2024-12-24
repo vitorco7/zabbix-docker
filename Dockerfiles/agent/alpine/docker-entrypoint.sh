@@ -16,10 +16,6 @@ fi
 : ${ZBX_SERVER_PORT:="10051"}
 
 # Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -129,7 +125,7 @@ file_process_from_env() {
 
 prepare_zbx_agent_config() {
     echo "** Preparing Zabbix agent configuration file"
-    ZBX_AGENT_CONFIG=$ZABBIX_ETC_DIR/zabbix_agentd.conf
+    ZBX_AGENT_CONFIG=$ZABBIX_CONF_DIR/zabbix_agentd.conf
 
     : ${ZBX_PASSIVESERVERS:=""}
     : ${ZBX_ACTIVESERVERS:=""}
@@ -185,7 +181,7 @@ prepare_zbx_agent_config() {
     # Please use include to enable Alias feature
 #    update_config_multiple_var $ZBX_AGENT_CONFIG "Alias" ${ZBX_ALIAS}
     update_config_var $ZBX_AGENT_CONFIG "Timeout" "${ZBX_TIMEOUT}"
-    update_config_var $ZBX_AGENT_CONFIG "Include" "/etc/zabbix/zabbix_agentd.d/*.conf"
+    update_config_var $ZBX_AGENT_CONFIG "Include" "${ZABBIX_CONF_DIR}/zabbix_agentd.d/*.conf"
     update_config_var $ZBX_AGENT_CONFIG "UnsafeUserParameters" "${ZBX_UNSAFEUSERPARAMETERS}"
     update_config_var $ZBX_AGENT_CONFIG "LoadModulePath" "$ZABBIX_USER_HOME_DIR/modules/"
     update_config_multiple_var $ZBX_AGENT_CONFIG "LoadModule" "${ZBX_LOADMODULE}"

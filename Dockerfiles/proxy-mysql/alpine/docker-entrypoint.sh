@@ -15,10 +15,6 @@ fi
 : ${ZBX_SERVER_PORT:="10051"}
 
 # Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -353,7 +349,7 @@ create_db_schema_mysql() {
 update_zbx_config() {
     echo "** Preparing Zabbix proxy configuration file"
 
-    ZBX_CONFIG=$ZABBIX_ETC_DIR/zabbix_proxy.conf
+    ZBX_CONFIG=${ZABBIX_CONF_DIR}/zabbix_proxy.conf
 
     update_config_var $ZBX_CONFIG "ProxyMode" "${ZBX_PROXYMODE}"
     update_config_var $ZBX_CONFIG "Server" "${ZBX_SERVER_HOST}"
@@ -461,7 +457,6 @@ update_zbx_config() {
     update_config_var $ZBX_CONFIG "UnavailableDelay" "${ZBX_UNAVAILABLEDELAY}"
     update_config_var $ZBX_CONFIG "UnreachableDelay" "${ZBX_UNREACHABLEDELAY}"
 
-    update_config_var $ZBX_CONFIG "AlertScriptsPath" "/usr/lib/zabbix/alertscripts"
     update_config_var $ZBX_CONFIG "ExternalScripts" "/usr/lib/zabbix/externalscripts"
 
     update_config_var $ZBX_CONFIG "FpingLocation" "${ZBX_FPINGLOCATION}"
