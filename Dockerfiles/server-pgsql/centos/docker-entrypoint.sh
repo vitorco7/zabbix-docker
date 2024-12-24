@@ -87,20 +87,16 @@ update_config_var() {
         echo -n "** Updating '$config_path' parameter \"$var_name\": '$var_value'..."
     fi
 
-    # Remove configuration parameter definition in case of unset or empty parameter value
+    # Remove configuration parameter definition in case of unset parameter value
     if [ -z "$var_value" ]; then
         sed -i -e "/^$var_name=/d" "$config_path"
         echo "removed"
         return
     fi
 
-    # Remove value from configuration parameter in case of set to double quoted parameter value
-    if [[ "$var_value" == '""' ]]; then
-        if [ "$(grep -E "^$var_name=" $config_path)" ]; then
-            sed -i -e "/^$var_name=/s/=.*/=/" "$config_path"
-        else
-            sed -i -e "/^[#;] $var_name=/s/.*/&\n$var_name=/" "$config_path"
-        fi
+    # Remove value from configuration parameter in case of double quoted parameter value
+    if [ "$var_value" == '""' ]; then
+        sed -i -e "/^$var_name=/s/=.*/=/" "$config_path"
         echo "undefined"
         return
     fi
@@ -545,8 +541,8 @@ update_zbx_config() {
         update_config_var $ZBX_CONFIG "ExportType" "${ZBX_EXPORTTYPE}"
     fi
 
-    update_config_var $ZBX_CONFIG "FpingLocation" "/usr/sbin/fping"
-    update_config_var $ZBX_CONFIG "Fping6Location"
+    update_config_var $ZBX_CONFIG "FpingLocation" "${ZBX_FPINGLOCATION}"
+    update_config_var $ZBX_CONFIG "Fping6Location" '""'
 
     update_config_var $ZBX_CONFIG "SSHKeyLocation" "$ZABBIX_USER_HOME_DIR/ssh_keys"
     update_config_var $ZBX_CONFIG "LogSlowQueries" "${ZBX_LOGSLOWQUERIES}"
