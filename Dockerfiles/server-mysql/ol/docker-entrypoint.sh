@@ -495,8 +495,8 @@ update_zbx_config() {
         update_config_var $ZBX_CONFIG "ExportType" "${ZBX_EXPORTTYPE}"
     fi
 
-    update_config_var $ZBX_CONFIG "FpingLocation" "/usr/sbin/fping"
-    update_config_var $ZBX_CONFIG "Fping6Location"
+    update_config_var $ZBX_CONFIG "FpingLocation" "${ZBX_FPINGLOCATION}"
+    update_config_var $ZBX_CONFIG "Fping6Location" '""'
 
     update_config_var $ZBX_CONFIG "SSHKeyLocation" "$ZABBIX_USER_HOME_DIR/ssh_keys"
     update_config_var $ZBX_CONFIG "LogSlowQueries" "${ZBX_LOGSLOWQUERIES}"
