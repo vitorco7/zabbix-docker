@@ -13,10 +13,6 @@ fi
 : ${ZBX_SERVER_HOST:="zabbix-server"}
 
 # Default directories
-# User 'zabbix' home directory
-ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 ZABBIX_INTERNAL_ENC_DIR="${ZABBIX_USER_HOME_DIR}/enc_internal"
 
@@ -128,7 +124,7 @@ file_process_from_env() {
 update_zbx_config() {
     echo "** Preparing Zabbix proxy configuration file"
 
-    ZBX_CONFIG=$ZABBIX_ETC_DIR/zabbix_proxy.conf
+    ZBX_CONFIG=${ZABBIX_CONF_DIR}/zabbix_proxy.conf
 
     update_config_var $ZBX_CONFIG "ProxyMode" "${ZBX_PROXYMODE}"
     update_config_var $ZBX_CONFIG "Server" "${ZBX_SERVER_HOST}"
@@ -158,10 +154,10 @@ update_zbx_config() {
     update_config_var $ZBX_CONFIG "DBHost"
     : ${ZBX_USE_NODE_NAME_AS_DB_NAME:="false"}
     if [ "${ZBX_USE_NODE_NAME_AS_DB_NAME,,}" == "false" ]; then
-        update_config_var $ZBX_CONFIG "DBName" "/var/lib/zabbix/db_data/${ZBX_HOSTNAME:-"zabbix-proxy-sqlite3"}.sqlite"
+        update_config_var $ZBX_CONFIG "DBName" "${ZABBIX_USER_HOME_DIR}/db_data/${ZBX_HOSTNAME:-"zabbix-proxy-sqlite3"}.sqlite"
     else
         node_name=$(uname -n)
-        update_config_var $ZBX_CONFIG "DBName" "/var/lib/zabbix/db_data/$node_name.sqlite"
+        update_config_var $ZBX_CONFIG "DBName" "${ZABBIX_USER_HOME_DIR}/db_data/$node_name.sqlite"
     fi
     update_config_var $ZBX_CONFIG "DBUser"
     update_config_var $ZBX_CONFIG "DBPort"
@@ -234,7 +230,6 @@ update_zbx_config() {
     update_config_var $ZBX_CONFIG "UnavailableDelay" "${ZBX_UNAVAILABLEDELAY}"
     update_config_var $ZBX_CONFIG "UnreachableDelay" "${ZBX_UNREACHABLEDELAY}"
 
-    update_config_var $ZBX_CONFIG "AlertScriptsPath" "/usr/lib/zabbix/alertscripts"
     update_config_var $ZBX_CONFIG "ExternalScripts" "/usr/lib/zabbix/externalscripts"
 
     update_config_var $ZBX_CONFIG "FpingLocation" "${ZBX_FPINGLOCATION}"

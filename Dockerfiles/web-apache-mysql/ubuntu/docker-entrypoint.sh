@@ -19,8 +19,6 @@ fi
 : ${PHP_TZ:="Europe/Riga"}
 
 # Default directories
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Web interface www-root directory
 ZABBIX_WWW_ROOT="/usr/share/zabbix"
 # Apache main configuration file
@@ -137,19 +135,19 @@ check_db_connect() {
 prepare_web_server() {
     APACHE_SITES_DIR="/etc/apache2/sites-enabled"
 
-    ln -sfT "$ZABBIX_ETC_DIR/apache_envvars" "/etc/apache2/envvars"
+    ln -sfT "$ZABBIX_CONF_DIR/apache_envvars" "/etc/apache2/envvars"
 
     echo "** Adding Zabbix virtual host (HTTP)"
-    if [ -f "$ZABBIX_ETC_DIR/apache.conf" ]; then
-        ln -sfT "$ZABBIX_ETC_DIR/apache.conf" "$APACHE_SITES_DIR/zabbix.conf"
+    if [ -f "$ZABBIX_CONF_DIR/apache.conf" ]; then
+        ln -sfT "$ZABBIX_CONF_DIR/apache.conf" "$APACHE_SITES_DIR/zabbix.conf"
     else
         echo "**** Impossible to enable HTTP virtual host"
     fi
 
     if [ -f "/etc/ssl/apache2/ssl.crt" ] && [ -f "/etc/ssl/apache2/ssl.key" ]; then
         echo "** Adding Zabbix virtual host (HTTPS)"
-        if [ -f "$ZABBIX_ETC_DIR/apache_ssl.conf" ]; then
-            ln -sfT "$ZABBIX_ETC_DIR/apache_ssl.conf" "$APACHE_SITES_DIR/zabbix_ssl.conf"
+        if [ -f "$ZABBIX_CONF_DIR/apache_ssl.conf" ]; then
+            ln -sfT "$ZABBIX_CONF_DIR/apache_ssl.conf" "$APACHE_SITES_DIR/zabbix_ssl.conf"
         else
             echo "**** Impossible to enable HTTPS virtual host"
         fi
@@ -222,12 +220,12 @@ prepare_zbx_web_config() {
     : ${HTTP_INDEX_FILE:="index.php"}
     sed -i \
         -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-    "$ZABBIX_ETC_DIR/apache.conf"
+    "$ZABBIX_CONF_DIR/apache.conf"
 
-    if [ -f "$ZABBIX_ETC_DIR/apache_ssl.conf" ]; then
+    if [ -f "$ZABBIX_CONF_DIR/apache_ssl.conf" ]; then
         sed -i \
             -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-        "$ZABBIX_ETC_DIR/apache_ssl.conf"
+        "$ZABBIX_CONF_DIR/apache_ssl.conf"
     fi
 
     : ${ENABLE_WEB_ACCESS_LOG:="true"}

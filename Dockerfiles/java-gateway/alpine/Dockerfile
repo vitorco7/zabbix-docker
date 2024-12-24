@@ -13,7 +13,9 @@ ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
 ENV TERM=xterm \
     ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
-    PATH=${PATH}:/usr/lib/jvm/default-jvm/bin/ JAVA_HOME=/usr/lib/jvm/default-jvm
+    PATH=${PATH}:/usr/lib/jvm/default-jvm/bin/ JAVA_HOME=/usr/lib/jvm/default-jvm \
+    ZABBIX_USER_HOME_DIR="/var/lib/zabbix" \
+    ZABBIX_CONF_DIR="/etc/zabbix"
 
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix Java Gateway performs native support for monitoring JMX applications" \
@@ -54,19 +56,19 @@ RUN set -eux && \
             --uid 1997 \
             --ingroup zabbix \
             --shell /sbin/nologin \
-            --home /var/lib/zabbix/ \
+            --home ${ZABBIX_USER_HOME_DIR} \
         zabbix && \
-    mkdir -p /etc/zabbix/ && \
+    mkdir -p ${ZABBIX_CONF_DIR}/ && \
     mkdir -p /usr/sbin/zabbix_java/ext_lib/ && \
     rm -rf /usr/sbin/zabbix_java/lib/logback.xml && \
-    mv /usr/sbin/zabbix_java/lib/logback-console.xml /etc/zabbix/zabbix_java_gateway_logback.xml && \
-    chown --quiet -R zabbix:root /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    chgrp -R 0 /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    chmod -R g=u /etc/zabbix/ /usr/sbin/zabbix_java/
+    mv /usr/sbin/zabbix_java/lib/logback-console.xml ${ZABBIX_CONF_DIR}/zabbix_java_gateway_logback.xml && \
+    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/ && \
+    chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/ && \
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/
 
 EXPOSE 10052/TCP
 
-WORKDIR /var/lib/zabbix
+WORKDIR ${ZABBIX_USER_HOME_DIR}
 
 COPY ["conf/usr/sbin/zabbix_java_gateway", "/usr/sbin/"]
 COPY ["docker-entrypoint.sh", "/usr/bin/"]

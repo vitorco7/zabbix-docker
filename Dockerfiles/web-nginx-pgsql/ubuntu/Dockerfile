@@ -12,7 +12,8 @@ ARG ZBX_VERSION
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
 ENV TERM=xterm \
-    ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES}
+    ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
+    ZABBIX_CONF_DIR="/etc/zabbix"
 
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix web-interface based on Nginx web server with PostgreSQL database support" \
@@ -67,9 +68,9 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
             --shell /sbin/nologin \
             --home-dir /var/lib/zabbix/ \
         zabbix && \
-    mkdir -p /etc/zabbix && \
-    mkdir -p /etc/zabbix/web && \
-    mkdir -p /etc/zabbix/web/certs && \
+    mkdir -p ${ZABBIX_CONF_DIR} && \
+    mkdir -p ${ZABBIX_CONF_DIR}/web && \
+    mkdir -p ${ZABBIX_CONF_DIR}/web/certs && \
     mkdir -p /var/lib/php/session && \
     rm -f /etc/nginx/conf.d/*.conf && \
     rm -rf /var/cache/nginx/ && \
@@ -83,17 +84,17 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     rm -f locale/add_new_language.sh locale/update_po.sh locale/make_mo.sh && \
     find /usr/share/zabbix/locale -name '*.po' | xargs rm -f && \
     find /usr/share/zabbix/locale -name '*.sh' | xargs rm -f && \
-    ln -s "/etc/zabbix/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
-    ln -s "/etc/zabbix/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
     mkdir -p /var/lib/locales/supported.d/ && \
     rm -f /var/lib/locales/supported.d/local && \
     cat /usr/share/zabbix/include/locales.inc.php | grep display | grep true | awk '{$1=$1};1' | \
         cut -d"'" -f 2 | sort | \
         xargs -I '{}' bash -c 'echo "{}.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local' && \
     dpkg-reconfigure locales && \
-    chown --quiet -R zabbix:root /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chgrp -R 0 /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chmod -R g=u /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
     chown --quiet -R zabbix:root /etc/nginx/ /etc/php/8.3/fpm/php-fpm.conf /etc/php/8.3/fpm/pool.d/ && \
     chgrp -R 0 /etc/nginx/ /etc/php/8.3/fpm/php-fpm.conf /etc/php/8.3/fpm/pool.d/ && \
     chmod -R g=u /etc/nginx/ /etc/php/8.3/fpm/php-fpm.conf /etc/php/8.3/fpm/pool.d/ && \
