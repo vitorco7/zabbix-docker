@@ -34,7 +34,7 @@ ENV ZBX_SOURCES_DIR=/tmp/zabbix-${ZBX_VERSION} ZBX_OUTPUT_DIR=/tmp/zabbix-${ZBX_
 
 RUN --mount=type=cache,target=/root/.cache/go-build/ \
     --mount=type=cache,target=/root/go/ \
-    --mount=type=bind,source=src/,target=/tmp/src \
+    --mount=from=sources,target=/tmp/src \
     set -eux && \
     cd /tmp/ && \
     mkdir -p ${ZBX_OUTPUT_DIR}/agent/sbin/ && \
