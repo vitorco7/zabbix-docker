@@ -83,16 +83,20 @@ update_config_var() {
         echo -n "** Updating '$config_path' parameter \"$var_name\": '$var_value'..."
     fi
 
-    # Remove configuration parameter definition in case of unset parameter value
+    # Remove configuration parameter definition in case of unset or empty parameter value
     if [ -z "$var_value" ]; then
         sed -i -e "/^$var_name=/d" "$config_path"
         echo "removed"
         return
     fi
 
-    # Remove value from configuration parameter in case of double quoted parameter value
-    if [ "$var_value" == '""' ]; then
-        sed -i -e "/^$var_name=/s/=.*/=/" "$config_path"
+    # Remove value from configuration parameter in case of set to double quoted parameter value
+    if [[ "$var_value" == '""' ]]; then
+        if [ "$(grep -E "^$var_name=" $config_path)" ]; then
+            sed -i -e "/^$var_name=/s/=.*/=/" "$config_path"
+        else
+            sed -i -e "/^[#;] $var_name=/s/.*/&\n$var_name=/" "$config_path"
+        fi
         echo "undefined"
         return
     fi
@@ -106,7 +110,9 @@ update_config_var() {
     var_value=$(escape_spec_char "$var_value")
     var_name=$(escape_spec_char "$var_name")
 
-    if [ "$(grep -E "^$var_name=" $config_path)" ] && [ "$is_multiple" != "true" ]; then
+    if [ "$(grep -E "^$var_name=$var_value" $config_path)" ]; then
+        echo "exists"
+    elif [ "$(grep -E "^$var_name=" $config_path)" ] && [ "$is_multiple" != "true" ]; then
         sed -i -e "/^$var_name=/s/=.*/=$var_value/" "$config_path"
         echo "updated"
     elif [ "$(grep -Ec "^# $var_name=" $config_path)" -gt 1 ]; then
