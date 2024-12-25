@@ -77,7 +77,8 @@ RUN set -eux && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
-    chmod g=u ${ZABBIX_CONF_DIR}
+    chmod g=u ${ZABBIX_CONF_DIR} && \
+    /usr/sbin/zabbix_agent2 -V
 
 EXPOSE 10050/TCP 31999/TCP
 

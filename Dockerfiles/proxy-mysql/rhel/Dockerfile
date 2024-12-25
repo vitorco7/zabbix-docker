@@ -64,6 +64,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/proxy/conf/", "${ZABBIX_
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/proxy/database/mysql/", "/usr/share/doc/zabbix-proxy-mysql/"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     --mount=type=bind,target=/run/secrets/,src=secrets/ \
     set -eux && \
     INSTALL_PKGS="bash \
@@ -152,7 +153,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chgrp 0 ${ZABBIX_CONF_DIR} && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_proxy_modules.conf ${ZABBIX_USER_HOME_DIR} && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    microdnf -y clean all
+    /usr/sbin/zabbix_proxy -V
 
 
 EXPOSE 10051/TCP

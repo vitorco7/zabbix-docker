@@ -45,6 +45,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/conf/", "${ZABBIX
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/database/postgresql/", "/usr/share/doc/zabbix-server-postgresql/"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             fping \
@@ -141,7 +142,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chgrp 0 ${ZABBIX_CONF_DIR} && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_server_modules.conf ${ZABBIX_USER_HOME_DIR} && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    microdnf -y clean all
+    /usr/sbin/zabbix_server -V
 
 EXPOSE 10051/TCP
 

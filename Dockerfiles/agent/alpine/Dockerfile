@@ -82,7 +82,8 @@ RUN set -eux && \
         ${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
-    chmod g=u ${ZABBIX_CONF_DIR}
+    chmod g=u ${ZABBIX_CONF_DIR} && \
+    /usr/sbin/zabbix_agentd -V
 
 EXPOSE 10050/TCP
 

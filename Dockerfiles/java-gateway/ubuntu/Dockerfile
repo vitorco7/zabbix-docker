@@ -28,7 +28,8 @@ STOPSIGNAL SIGTERM
 
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/java_gateway/sbin/", "/usr/sbin/zabbix_java/"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -56,9 +57,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     mv /usr/sbin/zabbix_java/lib/logback-console.xml /etc/zabbix/zabbix_java_gateway_logback.xml && \
     chown --quiet -R zabbix:root /etc/zabbix/ /usr/sbin/zabbix_java/ && \
     chgrp -R 0 /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    chmod -R g=u /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    apt-get -y autoremove && \
-    apt-get -y clean
+    chmod -R g=u /etc/zabbix/ /usr/sbin/zabbix_java/
 
 EXPOSE 10052/TCP
 
