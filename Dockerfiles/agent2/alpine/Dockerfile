@@ -68,7 +68,7 @@ RUN set -eux && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/user_scripts && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     chgrp -R 0 ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
-    chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     /usr/sbin/zabbix_agent2 -V
 
 EXPOSE 10050/TCP 31999/TCP
