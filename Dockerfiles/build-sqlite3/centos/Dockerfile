@@ -29,6 +29,7 @@ ENV ZBX_SOURCES_DIR=/tmp/zabbix-${ZBX_VERSION} ZBX_OUTPUT_DIR=/tmp/zabbix-${ZBX_
 RUN --mount=type=cache,target=/root/.cache/go-build/ \
     --mount=type=cache,target=/root/go/ \
     --mount=from=sources,target=/tmp/src \
+    --mount=type=bind,source=patches/,target=/tmp/patches \
     set -eux && \
     ARCH_SUFFIX="$(arch)"; \
     case "$ARCH_SUFFIX" in \
@@ -60,6 +61,11 @@ RUN --mount=type=cache,target=/root/.cache/go-build/ \
         git -c advice.detachedHead=false clone ${ZBX_SOURCES} --branch ${GIT_BRANCH:-$ZBX_VERSION} --depth 1 --single-branch ${ZBX_SOURCES_DIR}; \
     fi && \
     cd ${ZBX_SOURCES_DIR} && \
+    for patch_filename in /tmp/patches/*.patch; do \
+        if [ -f "$patch_filename" ]; then \
+            patch -p1 < $patch_filename; \
+        fi \
+    done && \
     zabbix_revision=`git rev-parse --short HEAD` && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" include/version.h && \
     sed -i "s/{ZABBIX_REVISION}/$zabbix_revision/g" src/go/pkg/version/version.go && \

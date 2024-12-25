@@ -30,7 +30,7 @@ STOPSIGNAL SIGTERM
 
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent/sbin/zabbix_agentd", "/usr/sbin/zabbix_agentd"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/*", "/usr/bin/"]
-COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent/conf/", "/etc/zabbix/"]
+COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent/conf/", "${ZABBIX_CONF_DIR}/"]
 COPY ["conf/etc/yum.repos.d/oracle-epel-ol8.repo", "/etc/yum.repos.d/oracle-epel-ol8.repo"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
@@ -66,7 +66,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             --shell /sbin/nologin \
             --home-dir ${ZABBIX_USER_HOME_DIR} \
         zabbix && \
-    mkdir -p ZABBIX_CONF_DIR/ && \
+    mkdir -p ${ZABBIX_CONF_DIR}/ && \
     mkdir -p ${ZABBIX_CONF_DIR}/zabbix_agentd.d && \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
