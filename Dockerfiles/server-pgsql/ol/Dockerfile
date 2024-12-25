@@ -89,7 +89,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             -G dialout \
             --uid 1997 \
             --shell /sbin/nologin \
-            --home-dir ${ZABBIX_USER_HOME_DIR}/ \
+            --home-dir ${ZABBIX_USER_HOME_DIR} \
         zabbix && \
     chgrp zabbix /usr/bin/nmap && \
     setcap cap_net_raw+eip /usr/bin/nmap && \
