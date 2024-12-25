@@ -69,20 +69,24 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         zabbix && \
     echo "zabbix ALL=(root) NOPASSWD: /usr/sbin/smartctl" >> /etc/sudoers.d/zabbix && \
     mkdir -p ${ZABBIX_CONF_DIR} && \
+    mkdir -p ${ZABBIX_CONF_DIR}/zabbix_agentd.d && \
     mkdir -p ${ZABBIX_CONF_DIR}/zabbix_agent2.d && \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/buffer && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
+        ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
     chown --quiet zabbix:root ${ZABBIX_CONF_DIR}/ && \
     chgrp -R 0 ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
+        ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
     chgrp 0 ${ZABBIX_CONF_DIR} && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
+        ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
