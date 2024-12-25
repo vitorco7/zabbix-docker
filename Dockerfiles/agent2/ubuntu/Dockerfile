@@ -67,7 +67,6 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
-    mkdir -p ${ZABBIX_USER_HOME_DIR}/modules && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/buffer && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/user_scripts && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
