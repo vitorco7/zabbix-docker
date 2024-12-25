@@ -58,6 +58,7 @@ RUN set -eux && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     chgrp -R 0 ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/
+    /usr/sbin/zabbix_web_service -V
 
 EXPOSE 10053/TCP
 

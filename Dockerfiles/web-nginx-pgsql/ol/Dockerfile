@@ -32,6 +32,7 @@ COPY ["conf/etc/", "/etc/"]
 COPY ["conf/etc/yum.repos.d/oracle-epel-ol9.repo", "/etc/yum.repos.d/oracle-epel-ol9.repo"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             curl \
@@ -110,8 +111,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chmod -R g=u /var/lib/php/session/ && \
     microdnf -y remove \
             findutils \
-            glibc-locale-source && \
-    microdnf -y clean all
+            glibc-locale-source
 
 EXPOSE 8080/TCP 8443/TCP
 

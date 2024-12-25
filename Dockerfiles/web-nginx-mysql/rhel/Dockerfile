@@ -50,6 +50,8 @@ COPY ["conf/etc/", "/etc/"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
+    --mount=type=bind,target=/run/secrets/,src=secrets/ \
     set -eux && \
     INSTALL_PKGS="bash \
             curl \
@@ -144,8 +146,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chmod -R g=u /var/lib/php/session/ && \
     microdnf -y remove \
             findutils \
-            glibc-locale-source && \
-    microdnf -y clean all
+            glibc-locale-source
 
 EXPOSE 8080/TCP 8443/TCP
 

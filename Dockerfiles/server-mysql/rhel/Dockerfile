@@ -56,6 +56,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/conf/", "${ZABBIX
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/database/mysql/create.sql.gz", "/usr/share/doc/zabbix-server-mysql/create.sql.gz"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     --mount=type=bind,target=/run/secrets/,src=secrets/ \
     set -eux && \
     INSTALL_PKGS="bash \
@@ -147,7 +148,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     chgrp -R 0 ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_USER_HOME_DIR}/ && \
-    microdnf -y clean all
+    /usr/sbin/zabbix_server -V
 
 EXPOSE 10051/TCP
 
