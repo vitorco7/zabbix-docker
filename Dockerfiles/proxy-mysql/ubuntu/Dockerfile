@@ -14,7 +14,7 @@ ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 ENV TERM=xterm \
     ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
     MIBDIRS=/var/lib/mibs/ietf:/var/lib/mibs/iana:/usr/share/snmp/mibs:/var/lib/zabbix/mibs MIBS=+ALL \
-    NMAP_PRIVILEGED=""  \
+    NMAP_PRIVILEGED="" \
     ZABBIX_USER_HOME_DIR="/var/lib/zabbix" \
     ZABBIX_CONF_DIR="/etc/zabbix" \
     ZBX_FPINGLOCATION="/usr/bin/fping"
