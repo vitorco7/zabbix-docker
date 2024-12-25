@@ -42,7 +42,8 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/proxy/sbin/zabbix_proxy"
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/proxy/conf/", "${ZABBIX_CONF_DIR}/"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/", "/usr/bin/"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -103,7 +104,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     chgrp 0 ${ZABBIX_CONF_DIR} && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_proxy_modules.conf ${ZABBIX_USER_HOME_DIR} && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    apt-get -y autoremove
+    /usr/sbin/zabbix_proxy -V
 
 EXPOSE 10051/TCP
 

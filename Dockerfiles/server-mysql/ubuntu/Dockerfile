@@ -44,7 +44,8 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/*", "/usr/bi
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/conf/", "${ZABBIX_CONF_DIR}/"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/server/database/mysql/create.sql.gz", "/usr/share/doc/zabbix-server-mysql/create.sql.gz"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -113,8 +114,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     chgrp 0 ${ZABBIX_CONF_DIR} && \
     chmod -R g=u ${ZABBIX_CONF_DIR}/zabbix_server_modules.conf ${ZABBIX_USER_HOME_DIR} && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    apt-get -y autoremove && \
-    apt-get -y clean
+    /usr/sbin/zabbix_server -V
 
 EXPOSE 10051/TCP
 

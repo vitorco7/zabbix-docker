@@ -31,6 +31,7 @@ LABEL description="Prepared environment to build Zabbix components" \
 COPY ["licenses", "/licenses"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     --mount=type=bind,target=/run/secrets/,src=secrets/ \
     set -eux && \
     INSTALL_PKGS="autoconf \
@@ -82,5 +83,4 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             --setopt=keepcache=0 \
             --best \
             --setopt=tsflags=nodocs \
-        ${INSTALL_PKGS} && \
-    microdnf -y clean all
+        ${INSTALL_PKGS}

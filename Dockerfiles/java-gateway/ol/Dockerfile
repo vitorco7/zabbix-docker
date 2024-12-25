@@ -29,6 +29,7 @@ STOPSIGNAL SIGTERM
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/java_gateway/sbin/", "/usr/sbin/zabbix_java/"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             java-17-openjdk-headless \
@@ -61,8 +62,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     mv /usr/sbin/zabbix_java/lib/logback-console.xml /etc/zabbix/zabbix_java_gateway_logback.xml && \
     chown --quiet -R zabbix:root /etc/zabbix/ /usr/sbin/zabbix_java/ && \
     chgrp -R 0 /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    chmod -R g=u /etc/zabbix/ /usr/sbin/zabbix_java/ && \
-    microdnf -y clean all
+    chmod -R g=u /etc/zabbix/ /usr/sbin/zabbix_java/
 
 EXPOSE 10052/TCP
 

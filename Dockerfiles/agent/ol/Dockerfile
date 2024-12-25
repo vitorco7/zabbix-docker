@@ -36,6 +36,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent/conf/", "${ZABBIX_
 COPY ["conf/etc/yum.repos.d/oracle-epel-ol9.repo", "/etc/yum.repos.d/oracle-epel-ol9.repo"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             iputils \
@@ -87,7 +88,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    microdnf -y clean all
+    /usr/sbin/zabbix_agentd -V
 
 EXPOSE 10050/TCP
 

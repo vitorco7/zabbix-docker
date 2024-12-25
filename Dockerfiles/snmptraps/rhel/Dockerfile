@@ -43,6 +43,7 @@ STOPSIGNAL SIGTERM
 COPY ["licenses", "/licenses"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             shadow-utils \
@@ -92,8 +93,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     touch /var/lib/net-snmp/snmptrapd.conf && \
     chown --quiet -R zabbix:root /etc/snmp/ /var/lib/zabbix/ /var/tmp/ /var/run/ && \
     chgrp -R 0 /etc/snmp/ /var/lib/zabbix/ /var/tmp/ /var/run/ && \
-    chmod -R g=u /etc/snmp/ /var/lib/zabbix/ /var/tmp/ /var/run/ && \
-    microdnf -y clean all
+    chmod -R g=u /etc/snmp/ /var/lib/zabbix/ /var/tmp/ /var/run/
 
 EXPOSE 1162/UDP
 

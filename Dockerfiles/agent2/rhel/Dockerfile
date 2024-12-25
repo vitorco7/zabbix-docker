@@ -54,6 +54,7 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/general/bin/*", "/usr/bi
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/agent2/conf/", "${ZABBIX_CONF_DIR}/"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             iputils \
@@ -119,7 +120,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \
         ${ZABBIX_USER_HOME_DIR}/ && \
     chmod g=u ${ZABBIX_CONF_DIR} && \
-    microdnf -y clean all
+    /usr/sbin/zabbix_agent2 -V
 
 EXPOSE 10050/TCP 31999/TCP
 

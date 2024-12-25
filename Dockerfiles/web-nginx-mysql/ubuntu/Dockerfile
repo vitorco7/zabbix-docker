@@ -29,7 +29,8 @@ STOPSIGNAL SIGTERM
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
 COPY ["conf/etc/", "/etc/"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -99,9 +100,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     chmod -R g=u /etc/nginx/ /etc/php/8.3/fpm/php-fpm.conf /etc/php/8.3/fpm/pool.d/ && \
     chown --quiet -R zabbix:root /var/lib/php/session/ && \
     chgrp -R 0 /var/lib/php/session/ && \
-    chmod -R g=u /var/lib/php/session/ && \
-    apt-get -y autoremove && \
-    apt-get -y clean
+    chmod -R g=u /var/lib/php/session/
 
 EXPOSE 8080/TCP 8443/TCP
 
