@@ -18,6 +18,7 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
       org.opencontainers.image.version="${ZBX_VERSION}"
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="autoconf \
             automake \
@@ -51,5 +52,4 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         --setopt=install_weak_deps=0 \
         --setopt=keepcache=0 \
         --best \
-        --nodocs ${INSTALL_PKGS} && \
-    microdnf -y clean all
+        --nodocs ${INSTALL_PKGS}

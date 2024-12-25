@@ -30,7 +30,8 @@ STOPSIGNAL SIGTERM
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
 COPY ["conf/etc/", "/etc/"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -125,9 +126,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
         purge \
             gpg \
             dirmngr \
-            gpg-agent && \
-    apt-get -y autoremove && \
-    apt-get -y clean
+            gpg-agent
 
 EXPOSE 8080/TCP 8443/TCP
 

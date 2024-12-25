@@ -18,6 +18,7 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
       org.opencontainers.image.version="${ZBX_VERSION}"
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     REPOLIST="baseos,appstream,powertools" && \
     INSTALL_PKGS="autoconf \
@@ -50,5 +51,4 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         --setopt=tsflags=nodocs \
         --setopt=install_weak_deps=False \
         --best \
-        ${INSTALL_PKGS} && \
-    dnf -y clean all
+        ${INSTALL_PKGS}
