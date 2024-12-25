@@ -32,14 +32,15 @@ COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/web_service/sbin/zabbix_
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/web_service/conf/", "${ZABBIX_CONF_DIR}/"]
 COPY ["conf/etc/apt/preferences.d/chromium.pref", "/etc/apt/preferences.d/chromium.pref"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
             ca-certificates \
             chromium \
             chromium-sandbox" && \
-    INSTALL_TEMP_PKGS="gnupg" && \
+    INSTALL_TEMP_PKGS="gnupg dirmngr gpg gpgconf" && \
     apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y \
             --no-install-recommends install \
@@ -76,7 +77,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
         ${INSTALL_TEMP_PKGS} && \
     rm -rf ~/.gnupg && \
     apt-get -y autoremove && \
-    apt-get -y clean
+    /usr/sbin/zabbix_web_service -V
 
 EXPOSE 10053/TCP
 

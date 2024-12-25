@@ -30,7 +30,8 @@ STOPSIGNAL SIGTERM
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
 COPY ["conf/etc/", "/etc/"]
 
-RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     set -eux && \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
@@ -102,9 +103,7 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
     chown --quiet -R zabbix:root /etc/apache2/ /etc/php/8.3/ && \
     chgrp -R 0 /etc/apache2/ /etc/php/8.3/ && \
-    chmod -R g=u /etc/apache2/ /etc/php/8.3/ && \
-    apt-get -y autoremove && \
-    apt-get -y clean
+    chmod -R g=u /etc/apache2/ /etc/php/8.3/
 
 EXPOSE 8080/TCP 8443/TCP
 

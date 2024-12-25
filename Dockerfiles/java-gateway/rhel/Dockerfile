@@ -50,6 +50,7 @@ COPY ["licenses", "/licenses"]
 COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}-output/java_gateway/sbin/", "/usr/sbin/zabbix_java/"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
+    --mount=type=tmpfs,target=/var/cache/yum/ \
     set -eux && \
     INSTALL_PKGS="bash \
             findutils \
@@ -84,8 +85,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     mv /usr/sbin/zabbix_java/lib/logback-console.xml ${ZABBIX_CONF_DIR}/zabbix_java_gateway_logback.xml && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/ && \
     chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/ && \
-    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/ && \
-    microdnf -y clean all
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/sbin/zabbix_java/
 
 EXPOSE 10052/TCP
 
