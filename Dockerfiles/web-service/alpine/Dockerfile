@@ -49,7 +49,7 @@ RUN set -eux && \
             --uid 1997 \
             --ingroup zabbix \
             --shell /sbin/nologin \
-            --home ${ZABBIX_USER_HOME_DIR}/ \
+            --home ${ZABBIX_USER_HOME_DIR} \
         zabbix && \
     mkdir -p ${ZABBIX_CONF_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \

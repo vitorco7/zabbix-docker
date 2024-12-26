@@ -22,8 +22,6 @@ fi
 : ${DAEMON_USER:="nginx"}
 
 # Default directories
-# Configuration files directory
-ZABBIX_ETC_DIR="/etc/zabbix"
 # Web interface www-root directory
 ZABBIX_WWW_ROOT="/usr/share/zabbix"
 # Nginx main configuration file
@@ -140,21 +138,21 @@ prepare_web_server() {
     NGINX_SSL_CONFIG="/etc/ssl/nginx"
 
     if [ ! -f "/proc/net/if_inet6" ]; then
-        sed -i '/listen \[::\]/d' "$ZABBIX_ETC_DIR/nginx.conf"
-        sed -i '/listen \[::\]/d' "$ZABBIX_ETC_DIR/nginx_ssl.conf"
+        sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx.conf"
+        sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx_ssl.conf"
     fi
 
     echo "** Adding Zabbix virtual host (HTTP)"
-    if [ -f "$ZABBIX_ETC_DIR/nginx.conf" ]; then
-        ln -s "$ZABBIX_ETC_DIR/nginx.conf" "$NGINX_CONFD_DIR"
+    if [ -f "$ZABBIX_CONF_DIR/nginx.conf" ]; then
+        ln -s "$ZABBIX_CONF_DIR/nginx.conf" "$NGINX_CONFD_DIR"
     else
         echo "**** Impossible to enable HTTP virtual host"
     fi
 
     if [ -f "$NGINX_SSL_CONFIG/ssl.crt" ] && [ -f "$NGINX_SSL_CONFIG/ssl.key" ] && [ -f "$NGINX_SSL_CONFIG/dhparam.pem" ]; then
         echo "** Enable SSL support for Nginx"
-        if [ -f "$ZABBIX_ETC_DIR/nginx_ssl.conf" ]; then
-            ln -s "$ZABBIX_ETC_DIR/nginx_ssl.conf" "$NGINX_CONFD_DIR"
+        if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
+            ln -s "$ZABBIX_CONF_DIR/nginx_ssl.conf" "$NGINX_CONFD_DIR"
         else
             echo "**** Impossible to enable HTTPS virtual host"
         fi
@@ -245,21 +243,21 @@ prepare_zbx_web_config() {
     FCGI_READ_TIMEOUT=$(expr ${ZBX_MAXEXECUTIONTIME} + 1)
     sed -i \
         -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
-    "$ZABBIX_ETC_DIR/nginx.conf"
+    "$ZABBIX_CONF_DIR/nginx.conf"
 
     : ${HTTP_INDEX_FILE:="index.php"}
     sed -i \
         -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-    "$ZABBIX_ETC_DIR/nginx.conf"
+    "$ZABBIX_CONF_DIR/nginx.conf"
 
-    if [ -f "$ZABBIX_ETC_DIR/nginx_ssl.conf" ]; then
+    if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
         sed -i \
             -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
-        "$ZABBIX_ETC_DIR/nginx_ssl.conf"
+        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
 
         sed -i \
             -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-        "$ZABBIX_ETC_DIR/nginx_ssl.conf"
+        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
     fi
 
     : ${ENABLE_WEB_ACCESS_LOG:="true"}
@@ -270,10 +268,10 @@ prepare_zbx_web_config() {
             "$NGINX_CONF_FILE"
         sed -ri \
             -e 's!^(\s*access_log).+\;!\1 off\;!g' \
-            "$ZABBIX_ETC_DIR/nginx.conf"
+            "$ZABBIX_CONF_DIR/nginx.conf"
         sed -ri \
             -e 's!^(\s*access_log).+\;!\1 off\;!g' \
-            "$ZABBIX_ETC_DIR/nginx_ssl.conf"
+            "$ZABBIX_CONF_DIR/nginx_ssl.conf"
     fi
 
     : ${EXPOSE_WEB_SERVER_INFO:="on"}

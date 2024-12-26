@@ -196,13 +196,13 @@ prepare_zbx_agent_config() {
 prepare_zbx_agent_plugin_config() {
     echo "** Preparing Zabbix agent plugin configuration files"
 
-    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/mongodb.conf" "Plugins.MongoDB.System.Path" "/usr/sbin/zabbix-agent2-plugin/mongodb"
-    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/postgresql.conf" "Plugins.PostgreSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/postgresql"
-    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/mssql.conf" "Plugins.MSSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/mssql"
-    update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/ember.conf" "Plugins.EmberPlus.System.Path" "/usr/sbin/zabbix-agent2-plugin/ember-plus"
+    update_config_var "${ZABBIX_CONF_DIR}/zabbix_agent2.d/plugins.d/mongodb.conf" "Plugins.MongoDB.System.Path" "/usr/sbin/zabbix-agent2-plugin/mongodb"
+    update_config_var "${ZABBIX_CONF_DIR}/zabbix_agent2.d/plugins.d/postgresql.conf" "Plugins.PostgreSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/postgresql"
+    update_config_var "${ZABBIX_CONF_DIR}/zabbix_agent2.d/plugins.d/mssql.conf" "Plugins.MSSQL.System.Path" "/usr/sbin/zabbix-agent2-plugin/mssql"
+    update_config_var "${ZABBIX_CONF_DIR}/zabbix_agent2.d/plugins.d/ember.conf" "Plugins.EmberPlus.System.Path" "/usr/sbin/zabbix-agent2-plugin/ember-plus"
     if command -v nvidia-smi 2>&1 >/dev/null
     then
-        update_config_var "$ZABBIX_CONF_DIR/zabbix_agent2.d/plugins.d/nvidia.conf" "Plugins.NVIDIA.System.Path" "/usr/sbin/zabbix-agent2-plugin/nvidia-gpu"
+        update_config_var "${ZABBIX_CONF_DIR}/zabbix_agent2.d/plugins.d/nvidia.conf" "Plugins.NVIDIA.System.Path" "/usr/sbin/zabbix-agent2-plugin/nvidia-gpu"
     fi
 }
 

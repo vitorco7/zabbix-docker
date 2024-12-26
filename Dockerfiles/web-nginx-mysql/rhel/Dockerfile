@@ -14,13 +14,14 @@ ARG ZBX_VERSION
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
 ENV TERM=xterm \
-    ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES}
+    ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
+    ZABBIX_CONF_DIR="/etc/zabbix"
 
 LABEL description="Zabbix web-interface based on Nginx web server with MySQL database support" \
       maintainer="alexey.pustovalov@zabbix.com" \
-      name="zabbix/zabbix-web-mysql-72" \
+      name="zabbix/zabbix-web-mysql" \
       release="${RELEASE}" \
-      run="docker run --name zabbix-web-nginx --link mysql-server:mysql --link zabbix-server:zabbix-server -p 80:80 -d registry.connect.redhat.com/zabbix/zabbix-web-nginx-72:${ZBX_VERSION}" \
+      run="docker run --name zabbix-web-nginx --link mysql-server:mysql --link zabbix-server:zabbix-server -p 80:80 -d registry.connect.redhat.com/zabbix/zabbix-web-nginx-70:${ZBX_VERSION}" \
       summary="Zabbix web-interface based on Nginx web server with MySQL database support" \
       url="https://www.zabbix.com/" \
       vendor="Zabbix SIA" \
@@ -31,7 +32,7 @@ LABEL description="Zabbix web-interface based on Nginx web server with MySQL dat
       io.openshift.tags="zabbix,zabbix-web,mysql,nginx" \
       org.label-schema.build-date="${BUILD_DATE}" \
       org.label-schema.description="Zabbix web-interface based on Nginx web server with MySQL database support" \
-      org.label-schema.docker.cmd="docker run --name zabbix-web-nginx --link mysql-server:mysql --link zabbix-server:zabbix-server -p 80:80 -d registry.connect.redhat.com/zabbix/zabbix-web-nginx-72:${ZBX_VERSION}" \
+      org.label-schema.docker.cmd="docker run --name zabbix-web-nginx --link mysql-server:mysql --link zabbix-server:zabbix-server -p 80:80 -d registry.connect.redhat.com/zabbix/zabbix-web-nginx-70:${ZBX_VERSION}" \
       org.label-schema.license="AGPL v3.0" \
       org.label-schema.name="zabbix-web-mysql-rhel" \
       org.label-schema.schema-version="1.0" \
@@ -121,9 +122,9 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             --shell /sbin/nologin \
             --home-dir /var/lib/zabbix/ \
         zabbix && \
-    mkdir -p /etc/zabbix && \
-    mkdir -p /etc/zabbix/web && \
-    mkdir -p /etc/zabbix/web/certs && \
+    mkdir -p ${ZABBIX_CONF_DIR} && \
+    mkdir -p ${ZABBIX_CONF_DIR}/web && \
+    mkdir -p ${ZABBIX_CONF_DIR}/web/certs && \
     mkdir -p /var/lib/php/session && \
     rm -f /etc/nginx/conf.d/*.conf  && \
     rm -f /etc/php-fpm.conf.rpmnew && \
@@ -136,14 +137,14 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     rm -f locale/add_new_language.sh locale/update_po.sh locale/make_mo.sh && \
     find /usr/share/zabbix/locale -name '*.po' | xargs rm -f && \
     find /usr/share/zabbix/locale -name '*.sh' | xargs rm -f && \
-    ln -s "/etc/zabbix/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
-    ln -s "/etc/zabbix/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
     cat /usr/share/zabbix/include/locales.inc.php | grep display | grep true | awk '{$1=$1};1' | \
         cut -d"'" -f 2 | sort | \
         xargs -I '{}' bash -c 'echo "{}" && localedef -c -i {} -f UTF-8 {}.UTF-8 2>/dev/null' && \
-    chown --quiet -R zabbix:root /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chgrp -R 0 /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chmod -R g=u /etc/zabbix/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
     chown --quiet -R zabbix:root /etc/nginx/ /etc/php-fpm.d/ /etc/php-fpm.conf /var/log/nginx/ && \
     chgrp -R 0 /etc/nginx/ /etc/php-fpm.d/ /etc/php-fpm.conf /var/log/nginx/ && \
     chmod -R g=u /etc/nginx/ /etc/php-fpm.d/ /etc/php-fpm.conf /var/log/nginx/ && \
