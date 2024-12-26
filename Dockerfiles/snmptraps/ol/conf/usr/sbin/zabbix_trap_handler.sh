@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ZABBIX_TRAPS_FILE="/var/lib/zabbix/snmptraps/snmptraps.log"
+ZABBIX_TRAPS_FILE="${ZABBIX_USER_HOME_DIR}/snmptraps/snmptraps.log"
 
 ZBX_SNMP_TRAP_DATE_FORMAT=${ZBX_SNMP_TRAP_DATE_FORMAT:-"+%Y-%m-%dT%T%z"}
 

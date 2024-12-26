@@ -104,11 +104,10 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
         zabbix && \
     chgrp zabbix /usr/bin/nmap && \
     setcap cap_net_raw+eip /usr/bin/nmap && \
-    mkdir -p ${ZABBIX_CONF_DIR} && \
+    mkdir -p ${ZABBIX_CONF_DIR}/ && \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
-    mkdir -p /usr/lib/zabbix/externalscripts && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/mibs && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/modules && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/snmptraps && \
@@ -117,6 +116,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/ssl/certs && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/ssl/keys && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/ssl/ssl_ca && \
+    mkdir -p /usr/lib/zabbix/externalscripts && \
     mkdir -p /usr/share/doc/zabbix-proxy-mysql && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/zabbix_proxy_modules.conf ${ZABBIX_USER_HOME_DIR} && \
     chown --quiet zabbix:root ${ZABBIX_CONF_DIR}/ && \

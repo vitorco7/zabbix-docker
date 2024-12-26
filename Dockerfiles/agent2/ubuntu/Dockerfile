@@ -16,7 +16,8 @@ ENV TERM=xterm \
     ZABBIX_USER_HOME_DIR="/var/lib/zabbix" \
     ZABBIX_CONF_DIR="/etc/zabbix"
 
-ENV ZBX_PERSISTENTBUFFERFILE="$ZABBIX_USER_HOME_DIR/buffer/agent2.db"
+ENV ZBX_PERSISTENTBUFFERFILE="$ZABBIX_USER_HOME_DIR/buffer/agent2.db" \
+    ZBX_USERPARAMETERDIR=${ZABBIX_USER_HOME_DIR}/user_scripts
 
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix agent 2 is deployed on a monitoring target to actively monitor local resources and applications" \
@@ -71,6 +72,7 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/buffer && \
+    mkdir -p ${ZABBIX_USER_HOME_DIR}/user_scripts && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
         ${ZABBIX_CONF_DIR}/zabbix_agent2.d/ \

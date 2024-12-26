@@ -384,7 +384,7 @@ create_db_schema_postgresql() {
             exec_sql_file "/usr/share/doc/zabbix-server-postgresql/timescaledb.sql"
         fi
 
-        apply_db_scripts "/var/lib/zabbix/dbscripts/*.sql"
+        apply_db_scripts "${ZABBIX_USER_HOME_DIR}/dbscripts/*.sql"
     fi
 }
 

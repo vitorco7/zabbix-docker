@@ -46,7 +46,6 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\conf\zabbix_agentd.d | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\enc | Out-Null; `
-    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\modules | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\buffer | Out-Null; `
     `
     net accounts /MaxPWAge:unlimited; `
