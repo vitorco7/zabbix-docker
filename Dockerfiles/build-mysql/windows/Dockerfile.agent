@@ -30,7 +30,8 @@ LABEL org.opencontainers.image.title="Zabbix agent build (Windows)" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-RUN Set-Location -Path $env:SystemDrive\.; `
+RUN --mount=from=config_templates,target=/tmp/conf \
+    Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -ItemType directory -Path $env:SystemDrive\zabbix_src | Out-Null; `
     New-Item -ItemType directory -Path $env:ZBX_OUTPUT_DIR | Out-Null; `
