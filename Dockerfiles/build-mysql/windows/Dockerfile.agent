@@ -30,7 +30,7 @@ LABEL org.opencontainers.image.title="Zabbix agent build (Windows)" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ADD config_templates C:\
+ADD config_templates C:\config_templates
 
 RUN Set-Location -Path $env:SystemDrive\.; `
     dir C:\config_templates; `

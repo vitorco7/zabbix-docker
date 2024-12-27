@@ -40,7 +40,7 @@ LABEL org.opencontainers.image.title="Zabbix agent 2 build (Windows)" `
       org.opencontainers.image.version="${ZBX_VERSION}" `
       org.opencontainers.image.source="${ZBX_SOURCES}"
 
-ADD config_templates C:\
+ADD config_templates C:\config_templates
 
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
