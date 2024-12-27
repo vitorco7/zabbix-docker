@@ -46,17 +46,16 @@ LABEL org.opencontainers.image.title="Zabbix agent build base for Windows" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ADD --checksum=sha256:21c6f0523abfd37a2f5cc85879d0ff32723ab496347f0d20793df888ecec3957 https://github.com/PhilipHazel/pcre2/releases/download/pcre2-$PCRE2_VERSION/pcre2-$PCRE2_VERSION.zip $TEMP\pcre2.zip
-ADD --checksum=sha256:2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281 https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz $TEMP\openssl.tar.gz
-ADD --checksum=sha256:15b4b2e0f68122c2da9b195de5c330489a9c97d40b4a95d2822378dc14d780e7 https://github.com/stephane/libmodbus/archive/refs/tags/v$LIBMODBUS_VERSION.tar.gz $TEMP\libmodbus.tar.gz
-ADD --checksum=sha256:9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23 https://zlib.net/zlib-$ZLIB_VERSION.tar.gz $TEMP\zlib.tar.gz
-ADD --checksum=sha256:a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80 https://curl.se/download/curl-$CURL_VERSION.tar.gz $TEMP\curl.tar.gz
-
-RUN Get-ChildItem "$TEMP" -recurse | Where-Object {$_.name -match 'libmodbus.tar.gz'} | foreach-object {write-host $_.FullName}
+ADD --checksum=sha256:21c6f0523abfd37a2f5cc85879d0ff32723ab496347f0d20793df888ecec3957 https://github.com/PhilipHazel/pcre2/releases/download/pcre2-$PCRE2_VERSION/pcre2-$PCRE2_VERSION.zip C:\pcre2.zip
+ADD --checksum=sha256:2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281 https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz C:\openssl.tar.gz
+ADD --checksum=sha256:15b4b2e0f68122c2da9b195de5c330489a9c97d40b4a95d2822378dc14d780e7 https://github.com/stephane/libmodbus/archive/refs/tags/v$LIBMODBUS_VERSION.tar.gz C:\libmodbus.tar.gz
+ADD --checksum=sha256:9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23 https://zlib.net/zlib-$ZLIB_VERSION.tar.gz C:\zlib.tar.gz
+ADD --checksum=sha256:a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80 https://curl.se/download/curl-$CURL_VERSION.tar.gz C:\curl.tar.gz
 
 COPY modbus.vs16.* C:\build_src\libmodbus_project\
 
 RUN Set-Location -Path $env:SystemDrive\.; `
+    Get-ChildItem Env:; `
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
     `
     $env:PATH = [string]::Format('{0}\perl\perl\bin;{1}\NASM;{0}\git\cmd;{0}\git\mingw64\bin;{0}\git\usr\bin;', $env:SystemDrive, ${env:ProgramFiles}) + $env:PATH; `
@@ -162,25 +161,25 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Set-Location -Path $env:BUILD_SRC; `
     `
     Write-Host 'Extracting PCRE2 archive ...'; `
-    Expand-Archive -Path $env:TEMP\pcre2.zip -DestinationPath $env:BUILD_SRC; `
+    Expand-Archive -Path $env:SystemDrive\pcre2.zip -DestinationPath $env:BUILD_SRC; `
     Rename-Item -Path $env:BUILD_SRC\pcre2-$env:PCRE2_VERSION -NewName $env:BUILD_SRC\pcre2; `
     New-Item -ItemType directory -Path "$env:BUILD_SRC\pcre2\build" | Out-Null; `
     `
     Write-Host 'Extracting OpenSSL archive ...'; `
-    tar -zxf $env:TEMP\openssl.tar.gz; `
+    tar -zxf $env:SystemDrive\openssl.tar.gz; `
     Rename-Item -Path $env:BUILD_SRC\openssl-$env:OPENSSL_VERSION -NewName $env:BUILD_SRC\openssl; `
     `
     Write-Host 'Extracting Libmodbus archive ...'; `
-    tar -zxf $env:TEMP\libmodbus.tar.gz; `
+    tar -zxf $env:SystemDrive\libmodbus.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\libmodbus-$env:LIBMODBUS_VERSION\ -Destination $env:BUILD_SRC\libmodbus; `
     Move-Item -Path $env:BUILD_SRC\libmodbus_project\* -Destination $env:BUILD_SRC\libmodbus\src\win32; `
     `
     Write-Host 'Extracting Zlib archive ...'; `
-    tar -zxf $env:TEMP\zlib.tar.gz; `
+    tar -zxf $env:SystemDrive\zlib.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\zlib-$env:ZLIB_VERSION\ -Destination $env:BUILD_SRC\zlib; `
     `
     Write-Host 'Extracting CURL archive ...'; `
-    tar -zxf $env:TEMP\curl.tar.gz; `
+    tar -zxf $env:SystemDrive\curl.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\curl-$env:CURL_VERSION\ -Destination $env:BUILD_SRC\curl; `
     `
     Set-Location -Path $env:SystemDrive\.; `
