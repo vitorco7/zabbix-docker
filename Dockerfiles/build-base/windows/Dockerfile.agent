@@ -52,7 +52,7 @@ ADD --checksum=sha256:15b4b2e0f68122c2da9b195de5c330489a9c97d40b4a95d2822378dc14
 ADD --checksum=sha256:9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23 https://zlib.net/zlib-$ZLIB_VERSION.tar.gz $TEMP\zlib.tar.gz
 ADD --checksum=sha256:a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80 https://curl.se/download/curl-$CURL_VERSION.tar.gz $TEMP\curl.tar.gz
 
-RUN Get-ChildItem "C:\" -recurse | Where-Object {$_.name -match "libmodbus.tar.gz"} | foreach-object {write-host $_.FullName}
+RUN Get-ChildItem "C:\\" -recurse | Where-Object {$_.name -match "libmodbus.tar.gz"} | foreach-object {write-host $_.FullName}
 
 COPY modbus.vs16.* C:\build_src\libmodbus_project\
 
