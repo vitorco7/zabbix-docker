@@ -54,10 +54,7 @@ ADD --checksum=sha256:a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e
 
 COPY modbus.vs16.* C:\build_src\libmodbus_project\
 
-RUN --mount=from=config_templates,target=C:\conf `
-    dir C:\conf; `
-    Set-Location -Path $env:SystemDrive\.; `
-    Get-ChildItem Env:; `
+RUN Set-Location -Path $env:SystemDrive\.; `
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
     `
     $env:PATH = [string]::Format('{0}\perl\perl\bin;{1}\NASM;{0}\git\cmd;{0}\git\mingw64\bin;{0}\git\usr\bin;', $env:SystemDrive, ${env:ProgramFiles}) + $env:PATH; `
