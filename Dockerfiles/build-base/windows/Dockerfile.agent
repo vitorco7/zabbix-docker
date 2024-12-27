@@ -3,11 +3,11 @@
 ARG BUILD_BASE_IMAGE=mcr.microsoft.com/windows/servercore:ltsc2022
 FROM $BUILD_BASE_IMAGE as builder_base
 
-ARG PCRE2_VERSION=10.43
+ARG PCRE2_VERSION=10.44
 ARG OPENSSL_VERSION=3.3.2
-ARG LIBMODBUS_VERSION=3.1.10
+ARG LIBMODBUS_VERSION=3.1.11
 ARG ZLIB_VERSION=1.3.1
-ARG CURL_VERSION=8.10.1
+ARG CURL_VERSION=8.11.1
 
 ARG BUILD_ARCH=x64
 ARG CPU_MODEL=AMD64
@@ -15,8 +15,8 @@ ARG CPU_MODEL=AMD64
 ARG MAJOR_VERSION=7.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.7
 
-ARG GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.33.0.windows.2/MinGit-2.33.0.2-busybox-64-bit.zip
-ARG PERL_URL=https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_53822_64bit/strawberry-perl-5.38.2.2-64bit-portable.zip
+ARG GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.1/MinGit-2.47.1-64-bit.zip
+ARG PERL_URL=https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/download/SP_54001_64bit_UCRT/strawberry-perl-5.40.0.1-64bit-portable.zip
 
 ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/17/release/vs_buildtools.exe
 ARG NASM_URL=https://www.nasm.us/pub/nasm/releasebuilds/2.16.03/win64/nasm-2.16.03-installer-x64.exe
@@ -46,6 +46,12 @@ LABEL org.opencontainers.image.title="Zabbix agent build base for Windows" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+ADD --checksum=sha256:21c6f0523abfd37a2f5cc85879d0ff32723ab496347f0d20793df888ecec3957 $PCRE2_URL C:\pcre2.zip
+ADD --checksum=sha256:2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281 $OPENSSL_URL C:\openssl.tar.gz
+ADD --checksum=sha256:15b4b2e0f68122c2da9b195de5c330489a9c97d40b4a95d2822378dc14d780e7 $LIBMODBUS_URL C:\libmodbus.tar.gz
+ADD --checksum=sha256:9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23 $ZLIB_URL C:\zlib.tar.gz
+ADD --checksum=sha256:a889ac9dbba3644271bd9d1302b5c22a088893719b72be3487bc3d401e5c4e80 $CURL_URL C:\curl.tar.gz
+
 COPY modbus.vs16.* C:\build_src\libmodbus_project\
 
 RUN Set-Location -Path $env:SystemDrive\.; `
@@ -62,7 +68,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host ('Downloading {0} ...' -f $env:GIT_URL); `
     Invoke-WebRequest -OutFile $env:TEMP\git.zip -Uri $env:GIT_URL; `
     `
-    $sha256 = '273f55e881094d00877d64f56570b0c997c4da5dedcb26738d56481033c1eba1'; `
+    $sha256 = '50b04b55425b5c465d076cdb184f63a0cd0f86f6ec8bb4d5860114a713d2c29a'; `
     $d_sha256 = (Get-FileHash $env:TEMP\git.zip -Algorithm sha256).Hash; `
     Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
     if ($d_sha256 -ne $sha256) { `
@@ -84,7 +90,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host ('Downloading {0} ...' -f $env:PERL_URL); `
     Invoke-WebRequest -OutFile $env:TEMP\perl.zip -Uri $env:PERL_URL; `
     `
-    $sha256 = 'EA451686065D6338D7E4D4A04C9AF49F17951D15AA4C2E19AB8CB56FA2373440'; `
+    $sha256 = '754f3e2a8e473dc68d1540c7802fb166a025f35ef18960c4564a31f8b5933907'; `
     $d_sha256 = (Get-FileHash $env:TEMP\perl.zip -Algorithm sha256).Hash; `
     Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
     if ($d_sha256 -ne $sha256) { `
@@ -153,81 +159,26 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     New-Item -ItemType directory -Path $env:BUILD_SRC -Force | Out-Null; `
     Set-Location -Path $env:BUILD_SRC; `
     `
-    Write-Host ('Downloading {0} ...' -f $env:PCRE2_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\pcre2.zip -Uri $env:PCRE2_URL; `
-    `
-    $sha256 = 'F2816E84DD7A402068797501BF69E24ECA18D882ADB2143DE9F831F39B850257'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\pcre2.zip -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum PCRE2 library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
-    Write-Host ('Downloading {0} ...' -f $env:OPENSSL_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\openssl.tar.gz -Uri $env:OPENSSL_URL; `
-    `
-    $sha256 = '2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\openssl.tar.gz -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum OpenSSL library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
-    Write-Host ('Downloading {0} ...' -f $env:LIBMODBUS_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\libmodbus.tar.gz -Uri $env:LIBMODBUS_URL; `
-    `
-    $sha256 = 'E93503749CD89FDA4C8CF1EE6371A3A9CC1F0A921C165AFBBC4FD96D4813FA1A'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\libmodbus.tar.gz -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum Libmodbus library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
-    Write-Host ('Downloading {0} ...' -f $env:ZLIB_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\zlib.tar.gz -Uri $env:ZLIB_URL; `
-    `
-    $sha256 = '9A93B2B7DFDAC77CEBA5A558A580E74667DD6FEDE4585B91EEFB60F03B72DF23'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\zlib.tar.gz -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum Zlib library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
-    Write-Host ('Downloading {0} ...' -f $env:CURL_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\curl.tar.gz -Uri $env:CURL_URL; `
-    `
-    $sha256 = 'd15ebab765d793e2e96db090f0e172d127859d78ca6f6391d7eafecfd894bbc0'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\curl.tar.gz -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum Curl library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
     Write-Host 'Extracting PCRE2 archive ...'; `
-    Expand-Archive -Path $env:TEMP\pcre2.zip -DestinationPath $env:BUILD_SRC; `
+    Expand-Archive -Path $env:SystemDrive\pcre2.zip -DestinationPath $env:BUILD_SRC; `
     Rename-Item -Path $env:BUILD_SRC\pcre2-$env:PCRE2_VERSION -NewName $env:BUILD_SRC\pcre2; `
     New-Item -ItemType directory -Path "$env:BUILD_SRC\pcre2\build" | Out-Null; `
     `
     Write-Host 'Extracting OpenSSL archive ...'; `
-    tar -zxf $env:TEMP\openssl.tar.gz; `
+    tar -zxf $env:SystemDrive\openssl.tar.gz; `
     Rename-Item -Path $env:BUILD_SRC\openssl-$env:OPENSSL_VERSION -NewName $env:BUILD_SRC\openssl; `
     `
     Write-Host 'Extracting Libmodbus archive ...'; `
-    tar -zxf $env:TEMP\libmodbus.tar.gz; `
+    tar -zxf $env:SystemDrive\libmodbus.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\libmodbus-$env:LIBMODBUS_VERSION\ -Destination $env:BUILD_SRC\libmodbus; `
     Move-Item -Path $env:BUILD_SRC\libmodbus_project\* -Destination $env:BUILD_SRC\libmodbus\src\win32; `
     `
     Write-Host 'Extracting Zlib archive ...'; `
-    tar -zxf $env:TEMP\zlib.tar.gz; `
+    tar -zxf $env:SystemDrive\zlib.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\zlib-$env:ZLIB_VERSION\ -Destination $env:BUILD_SRC\zlib; `
     `
     Write-Host 'Extracting CURL archive ...'; `
-    tar -zxf $env:TEMP\curl.tar.gz; `
+    tar -zxf $env:SystemDrive\curl.tar.gz; `
     Move-Item -Path $env:BUILD_SRC\curl-$env:CURL_VERSION\ -Destination $env:BUILD_SRC\curl; `
     `
     Set-Location -Path $env:SystemDrive\.; `
