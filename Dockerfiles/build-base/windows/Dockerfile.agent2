@@ -227,7 +227,6 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     mingw32-make -s -j"""$env:NUMBER_OF_PROCESSORS"""; `
     mingw32-make -s -j"""$env:NUMBER_OF_PROCESSORS""" install; `
     mingw32-make -s clean | Out-Null; `
-    Remove-Item -Path $env:BUILD_OUTPUT\pcre2\man -Force -Recurse; `
     Remove-Item -Path $env:BUILD_OUTPUT\pcre2\share -Force -Recurse; `
     Write-Host 'PCRE2 is ready...'; `
     `
