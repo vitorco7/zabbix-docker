@@ -11,12 +11,12 @@ ARG CPU_MODEL=AMD64
 ARG MAJOR_VERSION=7.4
 ARG ZBX_VERSION=${MAJOR_VERSION}
 
-ARG GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.33.0.windows.2/MinGit-2.33.0.2-busybox-64-bit.zip
+ARG GIT_URL=https://github.com/git-for-windows/git/releases/download/v2.47.1.windows.1/MinGit-2.47.1-busybox-64-bit.zip
 
 ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/17/release/vs_buildtools.exe
 ARG GOLANG_URL=https://go.dev/dl/go$GOLANG_VERSION.windows-amd64.zip
 ARG LLVM_MINGW=https://github.com/mstorsjo/llvm-mingw/releases/download/20241217/llvm-mingw-20241217-ucrt-x86_64.zip
-ARG VCPKG_GIT=https://github.com/microsoft/vcpkg
+ARG VCPKG_GIT=https://github.com/microsoft/vcpkg.git
 
 ENV ZBX_VERSION=$ZBX_VERSION `
     BUILD_ARCH=$BUILD_ARCH CPU_MODEL=$CPU_MODEL `
@@ -49,7 +49,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host ('Downloading {0} ...' -f $env:GIT_URL); `
     Invoke-WebRequest -OutFile $env:TEMP\git.zip -Uri $env:GIT_URL; `
     `
-    $sha256 = '273f55e881094d00877d64f56570b0c997c4da5dedcb26738d56481033c1eba1'; `
+    $sha256 = '7b26cc61866c5c0ec050797f57837bf064eacd3aaa87ae316e96c6936235cf29'; `
     $d_sha256 = (Get-FileHash $env:TEMP\git.zip -Algorithm sha256).Hash; `
     Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
     if ($d_sha256 -ne $sha256) { `
@@ -98,7 +98,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     `
     Write-Host 'Installing LLVM MinGW ...'; `
     Expand-Archive -Path $env:TEMP\llvm_mingw.zip -DestinationPath $env:SystemDrive\; `
-    Move-Item -Path $env:SystemDrive\llvm-mingw-20240502-ucrt-x86_64\ -Destination $env:SystemDrive\llvm_mingw; `
+    Move-Item -Path $env:SystemDrive\llvm-mingw-20241217-ucrt-x86_64\ -Destination $env:SystemDrive\llvm_mingw; `
     `
     Write-Host 'Verifying install ("gcc -v") ...'; `
     gcc -v; `
