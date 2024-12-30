@@ -30,6 +30,8 @@ LABEL org.opencontainers.image.title="Zabbix agent build (Windows)" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
+ADD config_templates C:\config_templates
+
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -ItemType directory -Path $env:SystemDrive\zabbix_src | Out-Null; `
@@ -70,5 +72,6 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_agentd.exe $env:ZBX_OUTPUT_DIR\sbin; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_get.exe $env:ZBX_OUTPUT_DIR\bin; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_sender.exe $env:ZBX_OUTPUT_DIR\bin; `
-    Copy-Item -Path $env:ZBX_SOURCES_DIR\conf\zabbix_agentd.win.conf $env:ZBX_OUTPUT_DIR\conf\zabbix_agentd.conf; `
+    Copy-Item -Path $env:ZBX_SOURCES_DIR\conf\zabbix_agentd.win.conf $env:ZBX_OUTPUT_DIR\conf\zabbix_agentd.conf_template; `
+    Copy-Item -Recurse -Path $env:SystemDrive\config_templates\agent $env:ZBX_OUTPUT_DIR\conf\; `
     Write-Host 'Zabbix binaries are compiled...';
