@@ -14,11 +14,10 @@ ARG MAJOR_VERSION
 ARG ZBX_VERSION
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
-ENV ZABBIX_USER_HOME_DIR="C:\zabbix" \
+ENV ZABBIX_USER_HOME_DIR="C:\zabbix" `
     ZABBIX_CONF_DIR="C:\zabbix\conf"
 
-ENV ZBX_LOADMODULEPATH="${ZABBIX_USER_HOME_DIR}/modules" \
-    ZBX_USERPARAMETERDIR=${ZABBIX_USER_HOME_DIR}/user_scripts
+ENV ZBX_USERPARAMETERDIR="${ZABBIX_USER_HOME_DIR}\user_scripts"
 
 LABEL org.opencontainers.image.title="Zabbix agent" `
       org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" `
@@ -53,7 +52,6 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     New-Item -Force -ItemType directory -Path $env:ZABBIX_CONF_DIR\zabbix_agentd.d | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZABBIX_USER_HOME_DIR\enc | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZABBIX_USER_HOME_DIR\buffer | Out-Null; `
-    New-Item -Force -ItemType directory -Path $env:ZBX_LOADMODULEPATH | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZBX_USERPARAMETERDIR | Out-Null; `
     `
     net accounts /MaxPWAge:unlimited; `

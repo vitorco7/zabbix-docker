@@ -73,5 +73,5 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_get.exe $env:ZBX_OUTPUT_DIR\bin; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_sender.exe $env:ZBX_OUTPUT_DIR\bin; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\conf\zabbix_agentd.win.conf $env:ZBX_OUTPUT_DIR\conf\zabbix_agentd.conf_template; `
-    Copy-Item -Recurse -Path $env:SystemDrive\config_templates\agent $env:ZBX_OUTPUT_DIR\conf\; `
+    Copy-Item -Recurse -Path $env:SystemDrive\config_templates\agent\* $env:ZBX_OUTPUT_DIR\conf\; `
     Write-Host 'Zabbix binaries are compiled...';
