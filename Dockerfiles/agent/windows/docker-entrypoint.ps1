@@ -4,7 +4,6 @@ if ($env:DEBUG_MODE -eq "true") {
     Set-PSDebug -trace 1
 }
 
-# Default Zabbix installation name
 # Default Zabbix server host
 if ($env:ZBX_SERVER_HOST -eq $null) {
     $env:ZBX_SERVER_HOST="zabbix-server"
@@ -129,27 +128,27 @@ function File-Process-From-Env {
     )
 
     if (![string]::IsNullOrEmpty($VarValue)) {
-		$VarValue | Set-Content "$ZabbixInternalEncDir\VarName"
-		$FileName="$ZabbixInternalEncDir\VarName"
-	}
+        $VarValue | Set-Content "$ZabbixInternalEncDir\VarName"
+        $FileName="$ZabbixInternalEncDir\VarName"
+    }
 
-	if (![string]::IsNullOrEmpty($FileName)) {
-		Set-Item env:$VarName -Value $FileName
-	}
+    if (![string]::IsNullOrEmpty($FileName)) {
+        Set-Item env:$VarName -Value $FileName
+    }
 
-	$VarName=$VarName -replace 'FILE$'
-	Write-Host "** $VarName"
-	Set-Item env:$VarName -Value $null
+    $VarName=$VarName -replace 'FILE$'
+    Set-Item env:$VarName -Value $null
 }
 
 function Prepare-Zbx-Agent-Config {
     $ZbxAgentConfig="$env:ZABBIX_CONF_DIR\zabbix_agentd.conf"
-	if ($env:ZBX_PASSIVESERVERS -eq $null) {
-		$env:ZBX_PASSIVESERVERS=""
-	}
-	if ($env:ZBX_ACTIVESERVERS -eq $null) {
-		$env:ZBX_ACTIVESERVERS=""
-	}
+
+    if ($env:ZBX_PASSIVESERVERS -eq $null) {
+        $env:ZBX_PASSIVESERVERS=""
+    }
+    if ($env:ZBX_ACTIVESERVERS -eq $null) {
+        $env:ZBX_ACTIVESERVERS=""
+    }
 
     if (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST) -And ![string]::IsNullOrEmpty($env:ZBX_PASSIVESERVERS)) {
         $env:ZBX_PASSIVESERVERS="$env:ZBX_SERVER_HOST,$env:ZBX_PASSIVESERVERS"
@@ -158,24 +157,24 @@ function Prepare-Zbx-Agent-Config {
         $env:ZBX_PASSIVESERVERS=$env:ZBX_SERVER_HOST
     }
 
-	if (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST)) {
-		if (![string]::IsNullOrEmpty($env:ZBX_SERVER_PORT) -And $env:ZBX_SERVER_PORT -ne "10051") {
-			$env:ZBX_SERVER_HOST="$env:ZBX_SERVER_HOST:$env:ZBX_SERVER_PORT"
-		}
-		if (![string]::IsNullOrEmpty($env:ZBX_ACTIVESERVERS)) {
-			$env:ZBX_ACTIVESERVERS="$env:ZBX_SERVER_HOST,$env:ZBX_ACTIVESERVERS"
-		}
-		else {
-			$env:ZBX_ACTIVESERVERS=$env:ZBX_SERVER_HOST
-		}
-	}
+    if (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST)) {
+        if (![string]::IsNullOrEmpty($env:ZBX_SERVER_PORT) -And $env:ZBX_SERVER_PORT -ne "10051") {
+            $env:ZBX_SERVER_HOST="$env:ZBX_SERVER_HOST:$env:ZBX_SERVER_PORT"
+        }
+        if (![string]::IsNullOrEmpty($env:ZBX_ACTIVESERVERS)) {
+            $env:ZBX_ACTIVESERVERS="$env:ZBX_SERVER_HOST,$env:ZBX_ACTIVESERVERS"
+        }
+        else {
+            $env:ZBX_ACTIVESERVERS=$env:ZBX_SERVER_HOST
+        }
+    }
 
     if ([string]::IsNullOrWhitespace($env:ZBX_PASSIVE_ALLOW)) {
         $env:ZBX_PASSIVE_ALLOW="true"
     }
 
     if ($env:ZBX_PASSIVE_ALLOW -eq "true") {
-        Write-Host  "** Using '$env:ZBX_PASSIVESERVERS' servers for passive checks"
+        Write-Host "** Using '$env:ZBX_PASSIVESERVERS' servers for passive checks"
     }
     else {
         Set-Item env:ZBX_PASSIVESERVERS -Value $null
@@ -192,10 +191,8 @@ function Prepare-Zbx-Agent-Config {
         Set-Item env:ZBX_ACTIVESERVERS -Value $null
     }
 
-    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "DenyKey" "$env:ZBX_DENYKEY"
-    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "AllowKey" "$env:ZBX_ALLOWKEY"
-
-#	Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_modules.conf" "LoadModule" "$env:LOADMODULE"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2_item_keys.conf" "DenyKey" "$env:ZBX_DENYKEY"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2_item_keys.conf" "AllowKey" "$env:ZBX_ALLOWKEY"
 
     File-Process-From-Env "ZBX_TLSCAFILE" "$env:ZBX_TLSCAFILE" "$env:ZBX_TLSCA"
     File-Process-From-Env "ZBX_TLSCRLFILE" "$env:ZBX_TLSCRLFILE" "$env:ZBX_TLSCRL"
