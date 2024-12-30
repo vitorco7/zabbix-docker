@@ -33,7 +33,6 @@ SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPref
 ADD config_templates C:\config_templates
 
 RUN Set-Location -Path $env:SystemDrive\.; `
-    dir C:\config_templates; `
     `
     New-Item -ItemType directory -Path $env:SystemDrive\zabbix_src | Out-Null; `
     New-Item -ItemType directory -Path $env:ZBX_OUTPUT_DIR | Out-Null; `
