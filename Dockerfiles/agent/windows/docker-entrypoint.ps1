@@ -203,6 +203,11 @@ function ClearZbxEnv() {
     if ([string]::IsNullOrWhitespace($env:ZBX_CLEAR_ENV)) {
         return
     }
+
+    $env_vars=Get-ChildItem env:* | Where-Object {$_.Name -match "^ZABBIX_.*" } | foreach { $_.Name }
+    foreach ($env_var in $env_vars) {
+        Set-Item env:$env_var -Value $null
+    }
 }
 
 function PrepareAgent {

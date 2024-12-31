@@ -222,18 +222,23 @@ function Prepare-Zbx-Agent-Config {
 function Prepare-Zbx-Agent-Plugins-Config {
     Write-Host "** Preparing Zabbix agent 2 (plugins) configuration files"
 
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mongodb.conf" "Plugins.MongoDB.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\mongodb.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\postgresql.conf" "Plugins.PostgreSQL.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\postgresql.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mssql.conf" "Plugins.MSSQL.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\mssql.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\ember.conf" "Plugins.EmberPlus.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\ember-plus.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mongodb.conf" "Plugins.MongoDB.System.Path" "$env:ZABBIX_USER_HOME_DIR\zabbix-agent2-plugin\mongodb.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\postgresql.conf" "Plugins.PostgreSQL.System.Path" "$env:ZABBIX_USER_HOME_DIR\zabbix-agent2-plugin\postgresql.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mssql.conf" "Plugins.MSSQL.System.Path" "$env:ZABBIX_USER_HOME_DIR\zabbix-agent2-plugin\mssql.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\ember.conf" "Plugins.EmberPlus.System.Path" "$env:ZABBIX_USER_HOME_DIR\zabbix-agent2-plugin\ember-plus.exe"
     if (Get-Command nvidia-smi.exe -errorAction SilentlyContinue) {
-        Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\nvidia.conf" "Plugins.NVIDIA.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\nvidia-gpu.exe"
+        Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\nvidia.conf" "Plugins.NVIDIA.System.Path" "$env:ZABBIX_USER_HOME_DIR\zabbix-agent2-plugin\nvidia-gpu.exe"
     }
 }
 
 function ClearZbxEnv() {
     if ([string]::IsNullOrWhitespace($env:ZBX_CLEAR_ENV)) {
         return
+    }
+
+    $env_vars=Get-ChildItem env:* | Where-Object {$_.Name -match "^ZABBIX_.*" } | foreach { $_.Name }
+    foreach ($env_var in $env_vars) {
+        Set-Item env:$env_var -Value $null
     }
 }
 
