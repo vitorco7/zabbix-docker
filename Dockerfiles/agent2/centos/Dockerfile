@@ -81,6 +81,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     echo "zabbix ALL=(root) NOPASSWD: /usr/sbin/smartctl" >> /etc/sudoers.d/zabbix && \
     mkdir -p ${ZABBIX_CONF_DIR} && \
     mkdir -p ${ZABBIX_CONF_DIR}/zabbix_agentd.d && \
+    mkdir -p ${ZABBIX_CONF_DIR}/zabbix_agent2.d && \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
