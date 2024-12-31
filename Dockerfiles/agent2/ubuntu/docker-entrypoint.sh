@@ -175,12 +175,14 @@ prepare_zbx_agent_config() {
 
     if [ "${ZBX_ENABLEPERSISTENTBUFFER,,}" == "true" ]; then
         export ZBX_ENABLEPERSISTENTBUFFER=1
+    else
+        unset ZBX_ENABLEPERSISTENTBUFFER
     fi
 
     if [ "${ZBX_ENABLESTATUSPORT,,}" == "true" ]; then
         export ZBX_STATUSPORT=${ZBX_STATUSPORT="31999"}
     else
-        unset ZBX_PERSISTENTBUFFERFILE
+        unset ZBX_STATUSPORT
     fi
 
     update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf" "DenyKey" "${ZBX_DENYKEY}"

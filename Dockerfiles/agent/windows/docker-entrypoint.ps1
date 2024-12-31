@@ -4,22 +4,19 @@ if ($env:DEBUG_MODE -eq "true") {
     Set-PSDebug -trace 1
 }
 
-# Default Zabbix installation name
 # Default Zabbix server host
-if ([string]::IsNullOrWhitespace($env:ZBX_SERVER_HOST)) {
+if ($env:ZBX_SERVER_HOST -eq $null) {
     $env:ZBX_SERVER_HOST="zabbix-server"
 }
 # Default Zabbix server port number
-if ([string]::IsNullOrWhitespace($env:ZBX_SERVER_PORT)) {
+if ($env:ZBX_SERVER_PORT -eq $null) {
     $env:ZBX_SERVER_PORT="10051"
 }
 
 
 # Default directories
-# User 'zabbix' home directory
-$ZabbixUserHomeDir="C:\zabbix"
-# Configuration files directory
-$ZabbixConfigDir="C:\zabbix\conf"
+# Internal directory for TLS related files, used when TLS*File specified as plain text values
+$ZabbixInternalEncDir="$env:ZABBIX_USER_HOME_DIR/enc_internal"
 
 function Update-Config-Var {
     Param (
@@ -119,51 +116,67 @@ function Update-Config-Multiple-Var {
     }
 }
 
+function File-Process-From-Env {
+    Param (
+        [Parameter(Mandatory=$true, Position=0)]
+        [ValidateNotNullOrEmpty()]
+        [string] $VarName,
+        [Parameter(Mandatory=$false, Position=1)]
+        [string]$FileName = $null,
+        [Parameter(Mandatory=$false, Position=2)]
+        [string]$VarValue = $null
+    )
+
+    if (![string]::IsNullOrEmpty($VarValue)) {
+        $VarValue | Set-Content "$ZabbixInternalEncDir\VarName"
+        $FileName="$ZabbixInternalEncDir\VarName"
+    }
+
+    if (![string]::IsNullOrEmpty($FileName)) {
+        Set-Item env:$VarName -Value $FileName
+    }
+
+    $VarName=$VarName -replace 'FILE$'
+    Set-Item env:$VarName -Value $null
+}
+
 function Prepare-Zbx-Agent-Config {
-    Write-Host "** Preparing Zabbix agent configuration file"
-
-    $ZbxAgentConfig="$ZabbixConfigDir\zabbix_agentd.conf"
-
-    if ([string]::IsNullOrWhitespace($env:ZBX_PASSIVESERVERS)) {
+    if ($env:ZBX_PASSIVESERVERS -eq $null) {
         $env:ZBX_PASSIVESERVERS=""
     }
-    else {
-        $env:ZBX_PASSIVESERVERS=",$env:ZBX_PASSIVESERVERS"
-    }
-
-    $env:ZBX_PASSIVESERVERS=$env:ZBX_SERVER_HOST + $env:ZBX_PASSIVESERVERS
-
-    if ([string]::IsNullOrWhitespace($env:ZBX_ACTIVESERVERS)) {
+    if ($env:ZBX_ACTIVESERVERS -eq $null) {
         $env:ZBX_ACTIVESERVERS=""
     }
-    else {
-        $env:ZBX_ACTIVESERVERS=",$env:ZBX_ACTIVESERVERS"
+
+    if (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST) -And ![string]::IsNullOrEmpty($env:ZBX_PASSIVESERVERS)) {
+        $env:ZBX_PASSIVESERVERS="$env:ZBX_SERVER_HOST,$env:ZBX_PASSIVESERVERS"
+    }
+    elseif (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST)) {
+        $env:ZBX_PASSIVESERVERS=$env:ZBX_SERVER_HOST
     }
 
-    $env:ZBX_ACTIVESERVERS=$env:ZBX_SERVER_HOST + ":" + $env:ZBX_SERVER_PORT + $env:ZBX_ACTIVESERVERS
-
-    Update-Config-Var $ZbxAgentConfig "LogType" "console"
-    Update-Config-Var $ZbxAgentConfig "LogFile"
-    Update-Config-Var $ZbxAgentConfig "LogFileSize"
-    Update-Config-Var $ZbxAgentConfig "DebugLevel" "$env:ZBX_DEBUGLEVEL"
-    Update-Config-Var $ZbxAgentConfig "SourceIP"
-    Update-Config-Var $ZbxAgentConfig "LogRemoteCommands" "$env:ZBX_LOGREMOTECOMMANDS"
+    if (![string]::IsNullOrEmpty($env:ZBX_SERVER_HOST)) {
+        if (![string]::IsNullOrEmpty($env:ZBX_SERVER_PORT) -And $env:ZBX_SERVER_PORT -ne "10051") {
+            $env:ZBX_SERVER_HOST="$env:ZBX_SERVER_HOST:$env:ZBX_SERVER_PORT"
+        }
+        if (![string]::IsNullOrEmpty($env:ZBX_ACTIVESERVERS)) {
+            $env:ZBX_ACTIVESERVERS="$env:ZBX_SERVER_HOST,$env:ZBX_ACTIVESERVERS"
+        }
+        else {
+            $env:ZBX_ACTIVESERVERS=$env:ZBX_SERVER_HOST
+        }
+    }
 
     if ([string]::IsNullOrWhitespace($env:ZBX_PASSIVE_ALLOW)) {
         $env:ZBX_PASSIVE_ALLOW="true"
     }
 
     if ($env:ZBX_PASSIVE_ALLOW -eq "true") {
-        Write-Host  "** Using '$env:ZBX_PASSIVESERVERS' servers for passive checks"
-        Update-Config-Var $ZbxAgentConfig "Server" "$env:ZBX_PASSIVESERVERS"
+        Write-Host "** Using '$env:ZBX_PASSIVESERVERS' servers for passive checks"
     }
     else {
-        Update-Config-Var $ZbxAgentConfig "Server"
+        Set-Item env:ZBX_PASSIVESERVERS -Value $null
     }
-
-    Update-Config-Var $ZbxAgentConfig "ListenPort" "$env:ZBX_LISTENPORT"
-    Update-Config-Var $ZbxAgentConfig "ListenIP" "$env:ZBX_LISTENIP"
-    Update-Config-Var $ZbxAgentConfig "StartAgents" "$env:ZBX_STARTAGENTS"
 
     if ([string]::IsNullOrWhitespace($env:ZBX_ACTIVE_ALLOW)) {
         $env:ZBX_ACTIVE_ALLOW="true"
@@ -171,57 +184,37 @@ function Prepare-Zbx-Agent-Config {
 
     if ($env:ZBX_ACTIVE_ALLOW -eq "true") {
         Write-Host "** Using '$env:ZBX_ACTIVESERVERS' servers for active checks"
-        Update-Config-Var $ZbxAgentConfig "ServerActive" "$env:ZBX_ACTIVESERVERS"
     }
     else {
-        Update-Config-Var $ZbxAgentConfig "ServerActive"
+        Set-Item env:ZBX_ACTIVESERVERS -Value $null
     }
-    Update-Config-Var $ZbxAgentConfig "HeartbeatFrequency" "$env:ZBX_HEARTBEAT_FREQUENCY"
 
-    Update-Config-Var $ZbxAgentConfig "HostInterface" "$env:ZBX_HOSTINTERFACE"
-    Update-Config-Var $ZbxAgentConfig "HostInterfaceItem" "$env:ZBX_HOSTINTERFACEITEM"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "DenyKey" "$env:ZBX_DENYKEY"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "AllowKey" "$env:ZBX_ALLOWKEY"
 
-    Update-Config-Var $ZbxAgentConfig "Hostname" "$env:ZBX_HOSTNAME"
-    Update-Config-Var $ZbxAgentConfig "HostnameItem" "$env:ZBX_HOSTNAMEITEM"
-    Update-Config-Var $ZbxAgentConfig "HostMetadata" "$env:ZBX_METADATA"
-    Update-Config-Var $ZbxAgentConfig "HostMetadataItem" "$env:ZBX_METADATAITEM"
-    Update-Config-Var $ZbxAgentConfig "RefreshActiveChecks" "$env:ZBX_REFRESHACTIVECHECKS"
-    Update-Config-Var $ZbxAgentConfig "BufferSend" "$env:ZBX_BUFFERSEND"
-    Update-Config-Var $ZbxAgentConfig "BufferSize" "$env:ZBX_BUFFERSIZE"
-    Update-Config-Var $ZbxAgentConfig "MaxLinesPerSecond" "$env:ZBX_MAXLINESPERSECOND"
-    # Please use include to enable Alias feature
-#    update_config_multiple_var $ZBX_AGENT_CONFIG "Alias" $env:ZBX_ALIAS
-    # Please use include to enable Perfcounter feature
-#    update_config_multiple_var $ZBX_AGENT_CONFIG "PerfCounter" $env:ZBX_PERFCOUNTER
-    Update-Config-Var $ZbxAgentConfig "Timeout" "$env:ZBX_TIMEOUT"
-    Update-Config-Var $ZbxAgentConfig "Include" "$ZabbixConfigDir\zabbix_agentd.d\*.conf"
-    Update-Config-Var $ZbxAgentConfig "UnsafeUserParameters" "$env:ZBX_UNSAFEUSERPARAMETERS"
-    Update-Config-Var $ZbxAgentConfig "UserParameterDir" "$ZabbixUserHomeDir\user_scripts\"
-    Update-Config-Var $ZbxAgentConfig "TLSConnect" "$env:ZBX_TLSCONNECT"
-    Update-Config-Var $ZbxAgentConfig "TLSAccept" "$env:ZBX_TLSACCEPT"
-    Update-Config-Var $ZbxAgentConfig "TLSCAFile" "$env:ZBX_TLSCAFILE"
-    Update-Config-Var $ZbxAgentConfig "TLSCRLFile" "$env:ZBX_TLSCRLFILE"
-    Update-Config-Var $ZbxAgentConfig "TLSServerCertIssuer" "$env:ZBX_TLSSERVERCERTISSUER"
-    Update-Config-Var $ZbxAgentConfig "TLSServerCertSubject" "$env:ZBX_TLSSERVERCERTSUBJECT"
-    Update-Config-Var $ZbxAgentConfig "TLSCertFile" "$env:ZBX_TLSCERTFILE"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherAll" "$env:ZBX_TLSCIPHERALL"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherAll13" "$env:ZBX_TLSCIPHERALL13"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherCert" "$env:ZBX_TLSCIPHERCERT"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherCert13" "$env:ZBX_TLSCIPHERCERT13"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherPSK" "$env:ZBX_TLSCIPHERPSK"
-    Update-Config-Var $ZbxAgentConfig "TLSCipherPSK13" "$env:ZBX_TLSCIPHERPSK13"
-    Update-Config-Var $ZbxAgentConfig "TLSKeyFile" "$env:ZBX_TLSKEYFILE"
-    Update-Config-Var $ZbxAgentConfig "TLSPSKIdentity" "$env:ZBX_TLSPSKIDENTITY"
-    Update-Config-Var $ZbxAgentConfig "TLSPSKFile" "$env:ZBX_TLSPSKFILE"
+    File-Process-From-Env "ZBX_TLSCAFILE" "$env:ZBX_TLSCAFILE" "$env:ZBX_TLSCA"
+    File-Process-From-Env "ZBX_TLSCRLFILE" "$env:ZBX_TLSCRLFILE" "$env:ZBX_TLSCRL"
+    File-Process-From-Env "ZBX_TLSCERTFILE" "$env:ZBX_TLSCERTFILE" "$env:ZBX_TLSCERT"
+    File-Process-From-Env "ZBX_TLSKEYFILE" "$env:ZBX_TLSKEYFILE" "$env:ZBX_TLSKEY"
+    File-Process-From-Env "ZBX_TLSPSKFILE" "$env:ZBX_TLSPSKFILE" "$env:ZBX_TLSPSK"
+}
 
-    Update-Config-Multiple-Var $ZbxAgentConfig "DenyKey" "$env:ZBX_DENYKEY"
-    Update-Config-Multiple-Var $ZbxAgentConfig "AllowKey" "$env:ZBX_ALLOWKEY"
+function ClearZbxEnv() {
+    if ([string]::IsNullOrWhitespace($env:ZBX_CLEAR_ENV)) {
+        return
+    }
 
+    $env_vars=Get-ChildItem env:* | Where-Object {$_.Name -match "^ZABBIX_.*" } | foreach { $_.Name }
+    foreach ($env_var in $env_vars) {
+        Set-Item env:$env_var -Value $null
+    }
 }
 
 function PrepareAgent {
     Write-Host "** Preparing Zabbix agent"
+
     Prepare-Zbx-Agent-Config
+    ClearZbxEnv
 }
 
 $commandArgs=$args

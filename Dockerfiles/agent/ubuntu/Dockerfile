@@ -70,7 +70,7 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/enc_internal && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/modules && \
-    mkdir -p ${ZABBIX_USER_HOME_DIR}/user_scripts && \
+    mkdir -p ${ZBX_USERPARAMETERDIR} && \
     chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/zabbix_agentd_modules.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf \
         ${ZABBIX_CONF_DIR}/zabbix_agentd.d/ \
