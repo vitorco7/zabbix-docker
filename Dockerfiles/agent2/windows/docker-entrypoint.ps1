@@ -222,12 +222,12 @@ function Prepare-Zbx-Agent-Config {
 function Prepare-Zbx-Agent-Plugins-Config {
     Write-Host "** Preparing Zabbix agent 2 (plugins) configuration files"
 
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mongodb.conf" "Plugins.MongoDB.System.Path" "$ZabbixUserHomeDir\zabbix-agent2-plugin\mongodb.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\postgresql.conf" "Plugins.PostgreSQL.System.Path" "$ZabbixUserHomeDir\zabbix-agent2-plugin\postgresql.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mssql.conf" "Plugins.MSSQL.System.Path" "$ZabbixUserHomeDir\zabbix-agent2-plugin\mssql.exe"
-    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\ember.conf" "Plugins.EmberPlus.System.Path" "$ZabbixUserHomeDir\zabbix-agent2-plugin\ember-plus.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mongodb.conf" "Plugins.MongoDB.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\mongodb.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\postgresql.conf" "Plugins.PostgreSQL.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\postgresql.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\mssql.conf" "Plugins.MSSQL.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\mssql.exe"
+    Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\ember.conf" "Plugins.EmberPlus.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\ember-plus.exe"
     if (Get-Command nvidia-smi.exe -errorAction SilentlyContinue) {
-        Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\nvidia.conf" "Plugins.NVIDIA.System.Path" "$ZabbixUserHomeDir\zabbix-agent2-plugin\nvidia-gpu.exe"
+        Update-Config-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2.d\plugins.d\nvidia.conf" "Plugins.NVIDIA.System.Path" "$env:ZABBIX_CONF_DIR\zabbix-agent2-plugin\nvidia-gpu.exe"
     }
 }
 
