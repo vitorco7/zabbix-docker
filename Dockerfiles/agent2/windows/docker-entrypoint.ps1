@@ -140,8 +140,6 @@ function File-Process-From-Env {
 }
 
 function Prepare-Zbx-Agent-Config {
-    $ZbxAgentConfig="$env:ZABBIX_CONF_DIR\zabbix_agent2.conf"
-
     if ($env:ZBX_PASSIVESERVERS -eq $null) {
         $env:ZBX_PASSIVESERVERS=""
     }
@@ -211,8 +209,8 @@ function Prepare-Zbx-Agent-Config {
         $env:ZBX_STATUSPORT="31999"
     }
 
-    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "DenyKey" "$env:ZBX_DENYKEY"
-    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agentd_item_keys.conf" "AllowKey" "$env:ZBX_ALLOWKEY"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2_item_keys.conf" "DenyKey" "$env:ZBX_DENYKEY"
+    Update-Config-Multiple-Var "$env:ZABBIX_CONF_DIR\zabbix_agent2_item_keys.conf" "AllowKey" "$env:ZBX_ALLOWKEY"
 
     File-Process-From-Env "ZBX_TLSCAFILE" "$env:ZBX_TLSCAFILE" "$env:ZBX_TLSCA"
     File-Process-From-Env "ZBX_TLSCRLFILE" "$env:ZBX_TLSCRLFILE" "$env:ZBX_TLSCRL"
