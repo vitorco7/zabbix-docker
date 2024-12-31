@@ -45,6 +45,7 @@ RUN $env:PATH = [string]::Format('{0}\zabbix\sbin;{0}\zabbix\bin;', $env:SystemD
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\conf\zabbix_agentd.d | Out-Null; `
+    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\conf\zabbix_agent2.d | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\enc | Out-Null; `
     New-Item -Force -ItemType directory -Path $env:ZBX_HOME\buffer | Out-Null; `
     `
