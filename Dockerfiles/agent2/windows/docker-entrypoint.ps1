@@ -199,6 +199,7 @@ function Prepare-Zbx-Agent-Config {
     }
     else {
         Set-Item env:ZBX_ENABLEPERSISTENTBUFFER -Value $null
+        Set-Item env:ZBX_PERSISTENTBUFFERFILE -Value $null
     }
 
     if ([string]::IsNullOrWhitespace($env:ZBX_ENABLESTATUSPORT)) {
