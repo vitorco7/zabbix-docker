@@ -186,8 +186,8 @@ prepare_zbx_agent_config() {
         unset ZBX_STATUSPORT
     fi
 
-    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf" "DenyKey" "${ZBX_DENYKEY}"
-    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agentd_item_keys.conf" "AllowKey" "${ZBX_ALLOWKEY}"
+    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf" "DenyKey" "${ZBX_DENYKEY}"
+    update_config_multiple_var "${ZABBIX_CONF_DIR}/zabbix_agent2_item_keys.conf" "AllowKey" "${ZBX_ALLOWKEY}"
 
     file_process_from_env "ZBX_TLSCAFILE" "${ZBX_TLSCAFILE}" "${ZBX_TLSCA}"
     file_process_from_env "ZBX_TLSCRLFILE" "${ZBX_TLSCRLFILE}" "${ZBX_TLSCRL}"
