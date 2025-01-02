@@ -177,6 +177,7 @@ prepare_zbx_agent_config() {
         export ZBX_ENABLEPERSISTENTBUFFER=1
     else
         unset ZBX_ENABLEPERSISTENTBUFFER
+        unset ZBX_PERSISTENTBUFFERFILE
     fi
 
     if [ "${ZBX_ENABLESTATUSPORT,,}" == "true" ]; then
