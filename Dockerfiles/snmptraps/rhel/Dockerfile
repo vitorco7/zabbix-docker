@@ -1,4 +1,6 @@
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+# syntax=docker/dockerfile:1
+ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
+FROM ${RHEL_BASE_IMAGE}
 
 ARG MAJOR_VERSION=6.4
 ARG RELEASE=20

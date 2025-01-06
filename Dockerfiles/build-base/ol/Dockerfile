@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM oraclelinux:9-slim
+ARG OL_BASE_IMAGE=oraclelinux:9-slim
+FROM ${OL_BASE_IMAGE}
 
 ARG MAJOR_VERSION=6.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.20

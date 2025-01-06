@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM ubuntu:noble
+ARG UBUNTU_BASE_IMAGE=ubuntu:noble
+FROM ${UBUNTU_BASE_IMAGE}
 
 ARG MAJOR_VERSION=6.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.20
