@@ -8,7 +8,7 @@ ARG BASE_IMAGE=mcr.microsoft.com/powershell:lts-nanoserver-ltsc2022
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM $BASE_IMAGE
+FROM ${BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
