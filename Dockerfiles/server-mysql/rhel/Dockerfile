@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
 ARG MAJOR_VERSION=7.2
 ARG RELEASE=2
 ARG ZBX_VERSION=${MAJOR_VERSION}.2
@@ -6,7 +7,7 @@ ARG BUILD_BASE_IMAGE=zabbix-build-mysql:rhel-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+FROM ${RHEL_BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG RELEASE
