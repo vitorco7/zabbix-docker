@@ -1,6 +1,5 @@
 # syntax=docker/dockerfile:1
-#ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
-ARG RHEL_BASE_IMAGE=registry.redhat.io/ubi10-beta/ubi-minimal
+ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
 FROM ${RHEL_BASE_IMAGE}
 
 ARG MAJOR_VERSION=7.0
