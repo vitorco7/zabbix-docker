@@ -1,11 +1,12 @@
 # syntax=docker/dockerfile:1
+ARG OL_BASE_IMAGE=oraclelinux:9-slim
 ARG MAJOR_VERSION=7.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.8
 ARG BUILD_BASE_IMAGE=zabbix-build-sqlite3:ol-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM oraclelinux:9-slim
+FROM ${OL_BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION

@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:1
-FROM registry.access.redhat.com/ubi9/ubi-minimal:9.5
+#ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
+ARG RHEL_BASE_IMAGE=registry.redhat.io/ubi10-beta/ubi-minimal
+FROM ${RHEL_BASE_IMAGE}
 
 ARG MAJOR_VERSION=7.0
 ARG RELEASE=8
@@ -32,7 +34,7 @@ COPY ["licenses", "/licenses"]
 
 RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     --mount=type=tmpfs,target=/var/cache/yum/ \
-    --mount=type=bind,target=/run/secrets/,src=secrets/ \
+#    --mount=type=bind,target=/run/secrets/,src=secrets/ \
     set -eux && \
     INSTALL_PKGS="autoconf \
             automake \

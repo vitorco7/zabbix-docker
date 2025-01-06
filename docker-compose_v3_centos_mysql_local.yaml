@@ -3,7 +3,9 @@ services:
   build:
    context: ./Dockerfiles/build-base/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
+   args:
+    CENTOS_BASE_IMAGE: ${CENTOS_BASE_IMAGE}
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   attach: false
 
@@ -44,7 +46,7 @@ services:
   build:
    context: ./Dockerfiles/server-mysql/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-server-mysql:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -64,7 +66,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-sqlite3/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-sqlite3:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -82,7 +84,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-mysql/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-mysql:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -101,7 +103,7 @@ services:
   build:
    context: ./Dockerfiles/web-apache-mysql/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-apache-mysql:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -120,7 +122,7 @@ services:
   build:
    context: ./Dockerfiles/web-nginx-mysql/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-nginx-mysql:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -139,7 +141,7 @@ services:
   build:
    context: ./Dockerfiles/agent/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-agent:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -157,7 +159,7 @@ services:
   build:
    context: ./Dockerfiles/java-gateway/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-java-gateway:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -173,7 +175,7 @@ services:
   build:
    context: ./Dockerfiles/snmptraps/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
   image: zabbix-snmptraps:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-mysql
@@ -187,7 +189,7 @@ services:
   build:
    context: ./Dockerfiles/web-service/${CENTOS_OS_TAG_SHORT}
    cache_from:
-    - "${CENTOS_CACHE_FROM}"
+    - "${CENTOS_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-service:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
