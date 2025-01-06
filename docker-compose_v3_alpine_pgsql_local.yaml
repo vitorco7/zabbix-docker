@@ -3,7 +3,7 @@ services:
   build:
    context: ./Dockerfiles/build-base/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   attach: false
 
@@ -13,8 +13,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${ALPINE_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -28,8 +26,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${ALPINE_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -45,8 +41,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${ALPINE_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -63,7 +57,7 @@ services:
   build:
    context: ./Dockerfiles/server-pgsql/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-server-pgsql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -82,7 +76,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-sqlite3/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-sqlite3:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -100,7 +94,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-mysql/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-mysql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -119,7 +113,7 @@ services:
   build:
    context: ./Dockerfiles/web-apache-pgsql/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-apache-pgsql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -138,7 +132,7 @@ services:
   build:
    context: ./Dockerfiles/web-nginx-pgsql/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-nginx-pgsql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -157,7 +151,7 @@ services:
   build:
    context: ./Dockerfiles/agent/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-agent:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -175,7 +169,7 @@ services:
   build:
    context: ./Dockerfiles/java-gateway/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-java-gateway:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -191,7 +185,7 @@ services:
   build:
    context: ./Dockerfiles/snmptraps/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
   image: zabbix-snmptraps:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-pgsql
@@ -205,7 +199,7 @@ services:
   build:
    context: ./Dockerfiles/web-service/${ALPINE_OS_TAG_SHORT}
    cache_from:
-    - "${ALPINE_CACHE_FROM}"
+    - "${ALPINE_BASE_IMAGE}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-service:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}

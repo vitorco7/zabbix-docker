@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM quay.io/centos/centos:stream9-minimal
+ARG CENTOS_BASE_IMAGE=quay.io/centos/centos:stream9-minimal
+FROM ${CENTOS_BASE_IMAGE}
 
 ARG MAJOR_VERSION=7.4
 ARG ZBX_VERSION=${MAJOR_VERSION}
