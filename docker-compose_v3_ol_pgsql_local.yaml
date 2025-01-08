@@ -4,6 +4,8 @@ services:
    context: ./Dockerfiles/build-base/${OL_OS_TAG_SHORT}
    cache_from:
     - "${OL_BASE_IMAGE}"
+   args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   attach: false
 
@@ -56,6 +58,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-server-pgsql:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -75,6 +78,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-sqlite3:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -93,6 +97,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-proxy-mysql:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -112,6 +117,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-apache-pgsql:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -131,6 +137,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-nginx-pgsql:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -150,6 +157,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-agent:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
@@ -168,6 +176,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-java-gateway:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
@@ -183,6 +192,8 @@ services:
    context: ./Dockerfiles/snmptraps/${OL_OS_TAG_SHORT}
    cache_from:
     - "${OL_BASE_IMAGE}"
+   args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-pgsql
@@ -198,6 +209,7 @@ services:
    cache_from:
     - "${OL_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${OL_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: zabbix-web-service:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:

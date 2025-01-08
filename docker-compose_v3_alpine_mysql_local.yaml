@@ -2,10 +2,10 @@ services:
  zabbix-build-base:
   build:
    context: ./Dockerfiles/build-base/${ALPINE_OS_TAG_SHORT}
-   args:
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
+   args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   attach: false
 
@@ -44,8 +44,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-server-mysql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -53,6 +53,7 @@ services:
    - mysql-server
    - zabbix-build-mysql
   labels:
+   com.zabbix.description: "Zabbix server with MySQL database support"
    com.zabbix.os: "${ALPINE_OS_TAG}"
 
  zabbix-proxy-sqlite3:
@@ -64,8 +65,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-proxy-sqlite3:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -83,8 +84,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-proxy-mysql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -103,8 +104,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-web-apache-mysql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -123,8 +124,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-web-nginx-mysql:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -143,8 +144,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-agent:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   volumes:
    - /etc/timezone:/etc/timezone:ro
@@ -162,8 +163,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-java-gateway:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-mysql
@@ -179,7 +180,7 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-mysql
@@ -195,8 +196,8 @@ services:
    cache_from:
     - "${ALPINE_BASE_IMAGE}"
    args:
+    OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-    ALPINE_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-web-service:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   depends_on:
    - zabbix-build-mysql
