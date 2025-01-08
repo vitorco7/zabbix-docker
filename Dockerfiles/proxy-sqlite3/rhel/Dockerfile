@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-ARG RHEL_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
+ARG OS_BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:9.5
 ARG MAJOR_VERSION=6.4
 ARG RELEASE=20
 ARG ZBX_VERSION=${MAJOR_VERSION}.20
@@ -7,7 +7,7 @@ ARG BUILD_BASE_IMAGE=zabbix-build-sqlite3:rhel-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM ${RHEL_BASE_IMAGE}
+FROM ${OS_BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG RELEASE
