@@ -1,12 +1,12 @@
 # syntax=docker/dockerfile:1
-ARG CENTOS_BASE_IMAGE=quay.io/centos/centos:stream9-minimal
+ARG OS_BASE_IMAGE=quay.io/centos/centos:stream9-minimal
 ARG MAJOR_VERSION=7.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.8
 ARG BUILD_BASE_IMAGE=zabbix-build-pgsql:centos-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-FROM ${CENTOS_BASE_IMAGE}
+FROM ${OS_BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
