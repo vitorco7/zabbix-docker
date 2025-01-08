@@ -14,8 +14,6 @@ services:
    context: ./Dockerfiles/build-mysql/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
-   cache_from:
-    - "${CENTOS_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -28,8 +26,6 @@ services:
    context: ./Dockerfiles/build-sqlite3/${CENTOS_OS_TAG_SHORT}
    additional_contexts:
     - sources=./sources/
-   cache_from:
-    - "${CENTOS_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_CENTOS_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
