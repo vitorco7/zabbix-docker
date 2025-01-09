@@ -81,7 +81,7 @@ update_config_var() {
     var_value=$(escape_spec_char "$var_value")
     var_name=$(escape_spec_char "$var_name")
 
-    if [ "$(grep -E "^$var_name=$var_value" $config_path)" ]; then
+    if [ "$(grep -E "^$var_name=$var_value$" $config_path)" ]; then
         echo "exists"
     elif [ "$(grep -E "^$var_name=" $config_path)" ] && [ "$is_multiple" != "true" ]; then
         sed -i -e "/^$var_name=/s/=.*/=$var_value/" "$config_path"
