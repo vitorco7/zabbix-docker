@@ -235,10 +235,10 @@ services:
    file: compose_databases.yaml
    service: db-data-pgsql
 
-# elasticsearch:
-#  extends:
-#   file: compose_databases.yaml
-#   service: elasticsearch
+ elasticsearch:
+  extends:
+   file: compose_databases.yaml
+   service: elasticsearch
 
 networks:
   frontend:
