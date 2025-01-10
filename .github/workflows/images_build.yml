@@ -284,7 +284,7 @@ jobs:
         run: cosign version
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
@@ -505,7 +505,7 @@ jobs:
         run: cosign version
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
@@ -866,7 +866,7 @@ jobs:
         run: cosign version
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@5927c834f5b4fdf503fca6f4c7eccda82949e1ee # v3.1.0
+        uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
         with:
           image: tonistiigi/binfmt:latest
           platforms: all
