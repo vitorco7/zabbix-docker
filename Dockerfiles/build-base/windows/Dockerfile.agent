@@ -23,7 +23,7 @@ ARG PERL_URL=https://github.com/StrawberryPerl/Perl-Dist-Strawberry/releases/dow
 ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/$VS_BUILDTOOLS_VERSION/release/vs_buildtools.exe
 ARG NASM_URL=https://www.nasm.us/pub/nasm/releasebuilds/$NASM_VERSION/win64/nasm-$NASM_VERSION-installer-x64.exe
 
-ARG PCRE_URL=https://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/pcre-$PCRE_VERSION.zip
+ARG PCRE_URL=https://downloads.sourceforge.net/project/pcre/pcre/$PCRE_VERSION/pcre-$PCRE_VERSION.zip
 ARG OPENSSL_URL=https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
 ARG ZLIB_URL=https://zlib.net/zlib-$ZLIB_VERSION.tar.gz
 ARG CURL_URL=https://curl.se/download/curl-$CURL_VERSION.tar.gz
@@ -155,7 +155,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     `
     Write-Host 'Extracting PCRE archive ...'; `
     Expand-Archive -Path $env:SystemDrive\pcre.zip -DestinationPath $env:BUILD_SRC; `
-    Rename-Item -Path $env:BUILD_SRC\pcre-$env:PCRE2_VERSION -NewName $env:BUILD_SRC\pcre; `
+    Rename-Item -Path $env:BUILD_SRC\pcre-$env:PCRE_VERSION -NewName $env:BUILD_SRC\pcre; `
     New-Item -ItemType directory -Path "$env:BUILD_SRC\pcre\build" | Out-Null; `
     `
     Write-Host 'Extracting OpenSSL archive ...'; `

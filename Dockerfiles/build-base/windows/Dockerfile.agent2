@@ -20,14 +20,14 @@ ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/$VS_BUILDTOOLS_VERSION/release/vs_buildt
 ARG GOLANG_URL=https://go.dev/dl/go$GOLANG_VERSION.windows-amd64.zip
 ARG MSYS2_URL=https://api.github.com/repos/msys2/msys2-installer/releases/latest
 
-ARG PCRE_URL=https://sourceforge.net/projects/pcre/files/pcre/$PCRE_VERSION/pcre-$PCRE_VERSION.zip
+ARG PCRE_URL=https://downloads.sourceforge.net/project/pcre/pcre/$PCRE_VERSION/pcre-$PCRE_VERSION.zip
 ARG OPENSSL_URL=https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
 
 ENV ZBX_VERSION=$ZBX_VERSION `
     BUILD_ARCH=$BUILD_ARCH `
     MINGW_URL=$MINGW_URL VS_BUILDTOOLS_URL=$VS_BUILDTOOLS_URL VS_BUILDTOOLS_VERSION=$VS_BUILDTOOLS_VERSION GOLANG_VERSION=$GOLANG_VERSION MSYS2_URL=$MSYS2_URL `
-    PCRE2_VERSION=$PCRE2_VERSION OPENSSL_VERSION=$OPENSSL_VERSION `
-    PCRE2_URL=$PCRE2_URL OPENSSL_URL=$OPENSSL_URL `
+    PCRE_VERSION=$PCRE_VERSION OPENSSL_VERSION=$OPENSSL_VERSION `
+    PCRE_URL=$PCRE_URL OPENSSL_URL=$OPENSSL_URL `
     CHERE_INVOKING=yes MSYSTEM=$MSYSTEM
 
 LABEL org.opencontainers.image.title="Zabbix agent 2 build base for Windows" `
@@ -156,7 +156,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     `
     Write-Host 'Extracting PCRE archive ...'; `
     Expand-Archive -Path $env:SystemDrive\pcre.zip -DestinationPath $env:BUILD_SRC; `
-    Rename-Item -Path $env:BUILD_SRC\pcre-$env:PCRE2_VERSION -NewName $env:BUILD_SRC\pcre; `
+    Rename-Item -Path $env:BUILD_SRC\pcre-$env:PCRE_VERSION -NewName $env:BUILD_SRC\pcre; `
     `
     Write-Host 'Extracting OpenSSL archive ...'; `
     $env:SystemDirectory = [Environment]::SystemDirectory; `
