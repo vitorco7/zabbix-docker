@@ -6,13 +6,12 @@ ARG BUILD_BASE_IMAGE=zabbix-build-base:ltsc2022-agent-${ZBX_VERSION}
 
 FROM ${BUILD_BASE_IMAGE} AS builder
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
+ARG ZABBIX_VERSION_RC_NUM=2400
+
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 ARG GIT_BRANCH=master
-ARG ZABBIX_VERSION_RC_NUM=2400
 
 ENV ZBX_SOURCES=$ZBX_SOURCES MAJOR_VERSION=$MAJOR_VERSION ZBX_VERSION=$ZBX_VERSION GIT_BRANCH=${GIT_BRANCH:-$ZBX_VERSION} `
     ZABBIX_VERSION_RC_NUM=$ZABBIX_VERSION_RC_NUM `
@@ -28,9 +27,9 @@ LABEL org.opencontainers.image.title="Zabbix agent build (Windows)" `
       org.opencontainers.image.version="${ZBX_VERSION}" `
       org.opencontainers.image.source="${ZBX_SOURCES}"
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
 ADD config_templates C:\config_templates
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
@@ -46,7 +45,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host ('Checkout GIT {0} ({1}) repository ...' -f $env:ZBX_SOURCES, $env:GIT_BRANCH); `
     git -c advice.detachedHead=false clone $env:ZBX_SOURCES --branch $env:GIT_BRANCH --depth 1 --single-branch $env:ZBX_SOURCES_DIR; `
     `
-    Write-Host ('Building Zabbix {0} version ...' -f $env:ZBX_VERSION); `
+    Write-Host ('Building Zabbix agent {0} version ...' -f $env:ZBX_VERSION); `
     Set-Location -Path $env:ZBX_SOURCES_DIR; `
     $ZbxRevision=(git rev-parse --short HEAD); `
     (Get-Content include/version.h).replace('{ZABBIX_REVISION}', $ZbxRevision) | Set-Content include/version.h; `
@@ -74,4 +73,5 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\bin\win64\zabbix_sender.exe $env:ZBX_OUTPUT_DIR\bin; `
     Copy-Item -Path $env:ZBX_SOURCES_DIR\conf\zabbix_agentd.win.conf $env:ZBX_OUTPUT_DIR\conf\zabbix_agentd.conf_template; `
     Copy-Item -Recurse -Path $env:SystemDrive\config_templates\agent\* $env:ZBX_OUTPUT_DIR\conf\; `
+    nmake /S -f Makefile clean; `
     Write-Host 'Zabbix binaries are compiled...';

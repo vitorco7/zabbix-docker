@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 # escape=`
 ARG OS_BASE_IMAGE=mcr.microsoft.com/powershell:lts-nanoserver-ltsc2022
+
 ARG MAJOR_VERSION=7.4
 ARG ZBX_VERSION=${MAJOR_VERSION}
 

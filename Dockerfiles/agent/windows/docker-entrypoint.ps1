@@ -13,7 +13,6 @@ if ($env:ZBX_SERVER_PORT -eq $null) {
     $env:ZBX_SERVER_PORT="10051"
 }
 
-
 # Default directories
 # Internal directory for TLS related files, used when TLS*File specified as plain text values
 $ZabbixInternalEncDir="$env:ZABBIX_USER_HOME_DIR/enc_internal"
