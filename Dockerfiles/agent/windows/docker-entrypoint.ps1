@@ -130,8 +130,8 @@ function File-Process-From-Env {
     )
 
     if (![string]::IsNullOrEmpty($VarValue)) {
-        $VarValue | Set-Content "$ZabbixInternalEncDir\VarName"
-        $FileName="$ZabbixInternalEncDir\VarName"
+        $VarValue | Set-Content "$ZabbixInternalEncDir\$VarName"
+        $FileName="$ZabbixInternalEncDir\$VarName"
     }
 
     Update-Config-Var $ZbxAgentConfig "$VarName" "$FileName"
