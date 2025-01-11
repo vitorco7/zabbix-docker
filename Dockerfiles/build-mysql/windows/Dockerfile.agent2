@@ -4,13 +4,12 @@ ARG MAJOR_VERSION=6.4
 ARG ZBX_VERSION=${MAJOR_VERSION}.20
 ARG BUILD_BASE_IMAGE=zabbix-build-base:ltsc2022-agent2-${ZBX_VERSION}
 
-FROM ${BUILD_BASE_IMAGE} as builder
+FROM ${BUILD_BASE_IMAGE} AS builder
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
-ARG MAJOR_VERSION=6.4
-ARG ZBX_VERSION=${MAJOR_VERSION}.20
+ARG MAJOR_VERSION
+ARG ZBX_VERSION
 ARG ZABBIX_VERSION_RC_NUM=2400
+
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 ARG MONGODB_PLUGIN_SOURCES=https://git.zabbix.com/scm/ap/mongodb.git
 ARG POSTGRESQL_PLUGIN_SOURCES=https://git.zabbix.com/scm/ap/postgresql.git
@@ -36,6 +35,8 @@ LABEL org.opencontainers.image.title="Zabbix agent 2 build (Windows)" `
       org.opencontainers.image.version="${ZBX_VERSION}" `
       org.opencontainers.image.source="${ZBX_SOURCES}"
 
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
+
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -ItemType directory -Path $env:ZBX_SOURCES_DIR | Out-Null; `
@@ -51,7 +52,7 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host ('Checkout GIT {0} ({1}) repository ...' -f $env:ZBX_SOURCES, $env:GIT_BRANCH); `
     git -c advice.detachedHead=false clone $env:ZBX_SOURCES --branch $env:GIT_BRANCH --depth 1 --single-branch $env:ZBX_SOURCES_DIR; `
     `
-    Write-Host ('Building Zabbix {0} version ...' -f $env:ZBX_VERSION); `
+    Write-Host ('Building Zabbix agent 2 {0} version ...' -f $env:ZBX_VERSION); `
     Set-Location -Path $env:ZBX_SOURCES_DIR; `
     $ZbxRevision=(git rev-parse --short HEAD); `
     (Get-Content include\version.h).replace('{ZABBIX_REVISION}', $ZbxRevision) | Set-Content include\version.h; `
@@ -106,5 +107,4 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Copy-Item -Path $env:SystemDrive\mssql-plugin-$env:MSSQL_PLUGIN_VERSION\zabbix-agent2-plugin-mssql.exe $env:ZBX_OUTPUT_DIR\zabbix-agent2-plugin\mssql.exe; `
     Copy-Item -Path $env:SystemDrive\mssql-plugin-$env:MSSQL_PLUGIN_VERSION\mssql.conf $env:ZBX_OUTPUT_DIR\conf\zabbix_agent2.d\plugins.d; `
     mingw32-make -s clean; `
-    `
     Write-Host 'Zabbix binaries are compiled...';

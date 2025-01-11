@@ -1,31 +1,31 @@
 # syntax=docker/dockerfile:1
 # escape=`
-ARG BUILD_BASE_IMAGE=mcr.microsoft.com/windows/servercore:ltsc2022
-FROM $BUILD_BASE_IMAGE as builder_base
+ARG OS_BASE_IMAGE=mcr.microsoft.com/windows/servercore:ltsc2022
+FROM ${OS_BASE_IMAGE}
 
-ARG PCRE2_VERSION=10.43
+ARG PCRE2_VERSION=10.44
 ARG OPENSSL_VERSION=3.1.5
 ARG GOLANG_VERSION=1.23.2
+ARG VS_BUILDTOOLS_VERSION=17
 
 ARG MSYSTEM=MINGW64
 
 ARG BUILD_ARCH=x64
-ARG CPU_MODEL=AMD64
 
-ARG MAJOR_VERSION=6.4
-ARG ZBX_VERSION=${MAJOR_VERSION}.20
+ARG MAJOR_VERSION=7.0
+ARG ZBX_VERSION=${MAJOR_VERSION}.8
 
 ARG MINGW_URL=https://github.com/niXman/mingw-builds-binaries/releases/download/8.5.0-rt_v10-rev0/x86_64-8.5.0-release-win32-sjlj-rt_v10-rev0.7z
-ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/17/release/vs_buildtools.exe
+ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/$VS_BUILDTOOLS_VERSION/release/vs_buildtools.exe
 ARG GOLANG_URL=https://go.dev/dl/go$GOLANG_VERSION.windows-amd64.zip
 ARG MSYS2_URL=https://api.github.com/repos/msys2/msys2-installer/releases/latest
 
 ARG PCRE2_URL=https://github.com/PhilipHazel/pcre2/releases/download/pcre2-$PCRE2_VERSION/pcre2-$PCRE2_VERSION.zip
-ARG OPENSSL_URL=https://www.openssl.org/source/openssl-$OPENSSL_VERSION.tar.gz
+ARG OPENSSL_URL=https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz
 
 ENV ZBX_VERSION=$ZBX_VERSION `
-    BUILD_ARCH=$BUILD_ARCH CPU_MODEL=$CPU_MODEL `
-    MINGW_URL=$MINGW_URL VS_BUILDTOOLS_URL=$VS_BUILDTOOLS_URL GOLANG_VERSION=$GOLANG_VERSION MSYS2_URL=$MSYS2_URL `
+    BUILD_ARCH=$BUILD_ARCH `
+    MINGW_URL=$MINGW_URL VS_BUILDTOOLS_URL=$VS_BUILDTOOLS_URL VS_BUILDTOOLS_VERSION=$VS_BUILDTOOLS_VERSION GOLANG_VERSION=$GOLANG_VERSION MSYS2_URL=$MSYS2_URL `
     PCRE2_VERSION=$PCRE2_VERSION OPENSSL_VERSION=$OPENSSL_VERSION `
     PCRE2_URL=$PCRE2_URL OPENSSL_URL=$OPENSSL_URL `
     CHERE_INVOKING=yes MSYSTEM=$MSYSTEM
@@ -35,9 +35,12 @@ LABEL org.opencontainers.image.title="Zabbix agent 2 build base for Windows" `
       org.opencontainers.image.vendor="Zabbix SIA" `
       org.opencontainers.image.url="https://zabbix.com/" `
       org.opencontainers.image.description="Zabbix build base image contains all required packages to build Zabbix agent 2 images" `
-      org.opencontainers.image.licenses="AGPL v3.0" `
+      org.opencontainers.image.licenses="GPL v2.0" `
       org.opencontainers.image.documentation="https://www.zabbix.com/documentation/${MAJOR_VERSION}/manual/installation/containers" `
       org.opencontainers.image.version="${ZBX_VERSION}"
+
+ADD --checksum=sha256:21c6f0523abfd37a2f5cc85879d0ff32723ab496347f0d20793df888ecec3957 $PCRE2_URL C:\pcre2.zip
+ADD --checksum=sha256:6ae015467dabf0469b139ada93319327be24b98251ffaeceda0221848dc09262 $OPENSSL_URL C:\openssl.tar.gz
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
@@ -51,6 +54,9 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     [Environment]::SetEnvironmentVariable('BUILD_OUTPUT', $env:BUILD_OUTPUT, [EnvironmentVariableTarget]::Machine); `
     $env:BUILD_SRC = [string]::Format('{0}\build_src', $env:SystemDrive); `
     [Environment]::SetEnvironmentVariable('BUILD_SRC', $env:BUILD_SRC, [EnvironmentVariableTarget]::Machine); `
+    `
+    New-Item -ItemType directory -Path $env:BUILD_OUTPUT -Force | Out-Null; `
+    New-Item -ItemType directory -Path $env:BUILD_SRC -Force | Out-Null; `
     `
     Write-Host ('Downloading {0} ...' -f $env:GOLANG_URL); `
     Invoke-WebRequest -OutFile $env:TEMP\go_lang.zip -Uri $env:GOLANG_URL; `
@@ -127,9 +133,9 @@ RUN Set-Location -Path $env:SystemDrive\.; `
         --norestart `
         --nocache `
         --installPath """${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools""" `
-        --channelUri https://aka.ms/vs/17/release/channel `
-        --installChannelUri https://aka.ms/vs/17/release/channel `
-        --channelId VisualStudio.17.Release `
+        --channelUri https://aka.ms/vs/$env:VS_BUILDTOOLS_VERSION/release/channel `
+        --installChannelUri https://aka.ms/vs/$env:VS_BUILDTOOLS_VERSION/release/channel `
+        --channelId VisualStudio.$env:VS_BUILDTOOLS_VERSION.Release `
         # https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
         --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64; `
     if ($err = dir $Env:TEMP -Filter dd_setup_*_errors.log | where Length -gt 0 | Get-Content) { `
@@ -144,51 +150,17 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host 'Visual Studio components installation cleanup'; `
     Get-ChildItem -Path """${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer""" -Directory -Recurse | Remove-Item -Force -Recurse; `
     `
-    Write-Host 'Removing downloaded...'; `
-    Remove-Item -Force -Recurse $env:TEMP\*; `
     Write-Host 'Build environment is ready...'; `
     `
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
-    `
-    New-Item -ItemType directory -Path $env:BUILD_OUTPUT -Force | Out-Null; `
-    New-Item -ItemType directory -Path $env:BUILD_SRC -Force | Out-Null; `
     Set-Location -Path $env:BUILD_SRC; `
     `
-    Write-Host ('Downloading {0} ...' -f $env:PCRE2_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\pcre2.zip -Uri $env:PCRE2_URL; `
-    `
-    $sha256 = 'F2816E84DD7A402068797501BF69E24ECA18D882ADB2143DE9F831F39B850257'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\pcre2.zip -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum PCRE2 library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
-    Write-Host ('Downloading {0} ...' -f $env:OPENSSL_URL); `
-    Invoke-WebRequest -OutFile $env:TEMP\openssl.tar.gz -Uri $env:OPENSSL_URL; `
-    `
-    $sha256 = '6ae015467dabf0469b139ada93319327be24b98251ffaeceda0221848dc09262'; `
-    $d_sha256 = (Get-FileHash $env:TEMP\openssl.tar.gz -Algorithm sha256).Hash; `
-    Write-Host ('Verifying SHA256 ({0}) ...' -f $sha256); `
-    if ($d_sha256 -ne $sha256) { `
-        Write-Host ('Checksum OpenSSL library ({0}) failed!' -f $d_sha256); `
-        exit 1; `
-    }; `
-    `
     Write-Host 'Extracting PCRE2 archive ...'; `
-    Expand-Archive -Path $env:TEMP\pcre2.zip -DestinationPath $env:BUILD_SRC; `
-    `
-    Write-Host 'Removing downloaded ...'; `
-    Remove-Item -Force -Path $env:TEMP\pcre2.zip; `
+    Expand-Archive -Path $env:SystemDrive\pcre2.zip -DestinationPath $env:BUILD_SRC; `
     Rename-Item -Path $env:BUILD_SRC\pcre2-$env:PCRE2_VERSION -NewName $env:BUILD_SRC\pcre2; `
     `
     Write-Host 'Extracting OpenSSL archive ...'; `
     $env:SystemDirectory = [Environment]::SystemDirectory; `
-    tar -zxf "$env:TEMP\openssl.tar.gz"; `
-    `
-    Write-Host 'Removing downloaded...'; `
-    Remove-Item -Force -Path $env:TEMP\openssl.tar.gz; `
+    tar -zxf "$env:SystemDrive\openssl.tar.gz"; `
     Rename-Item -Path $env:BUILD_SRC\openssl-$env:OPENSSL_VERSION -NewName $env:BUILD_SRC\openssl; `
     `
     Write-Host 'Building PCRE2 library ...'; `
@@ -206,7 +178,6 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     mingw32-make -s -j"""$env:NUMBER_OF_PROCESSORS"""; `
     mingw32-make -s -j"""$env:NUMBER_OF_PROCESSORS""" install; `
     mingw32-make -s clean | Out-Null; `
-    Remove-Item -Path $env:BUILD_OUTPUT\pcre2\man -Force -Recurse; `
     Remove-Item -Path $env:BUILD_OUTPUT\pcre2\share -Force -Recurse; `
     Write-Host 'PCRE2 is ready...'; `
     `
