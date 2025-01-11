@@ -249,7 +249,7 @@ jobs:
             Write-Host @"
             docker build --label org.opencontainers.image.revision=$Env:LABEL_REVISION
                          --label org.opencontainers.image.created=$Env:LABEL_CREATED
-                         --build-arg=BUILD_BASE_IMAGE=$base_os_image
+                         --build-arg=OS_BASE_IMAGE=$base_os_image
                          --file=$dockerfile
                          $tags
                     $context
@@ -257,7 +257,7 @@ jobs:
 
             docker build --label org.opencontainers.image.revision=$Env:LABEL_REVISION `
                          --label org.opencontainers.image.created=$Env:LABEL_CREATED `
-                         --build-arg=BUILD_BASE_IMAGE=$base_os_image `
+                         --build-arg=OS_BASE_IMAGE=$base_os_image `
                          --file=$dockerfile `
                          $tags `
                     $context
@@ -717,7 +717,7 @@ jobs:
             docker build --label org.opencontainers.image.revision=$Env:LABEL_REVISION
                          --label org.opencontainers.image.created=$Env:LABEL_CREATED
                          --build-arg=BUILD_BASE_IMAGE=$base_build_image
-                         --build-arg=BASE_IMAGE=$base_image
+                         --build-arg=OS_BASE_IMAGE=$base_image
                          --file=$dockerfile
                          $tags
                     $context
@@ -726,7 +726,7 @@ jobs:
             docker build --label org.opencontainers.image.revision=$Env:LABEL_REVISION `
                          --label org.opencontainers.image.created=$Env:LABEL_CREATED `
                          --build-arg=BUILD_BASE_IMAGE=$base_build_image `
-                         --build-arg=BASE_IMAGE=$base_image `
+                         --build-arg=OS_BASE_IMAGE=$base_image `
                          --file=$dockerfile `
                          $tags `
                     $context

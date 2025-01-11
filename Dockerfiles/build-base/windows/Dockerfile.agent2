@@ -1,22 +1,22 @@
 # syntax=docker/dockerfile:1
 # escape=`
-ARG BUILD_BASE_IMAGE=mcr.microsoft.com/windows/servercore:ltsc2022
-FROM $BUILD_BASE_IMAGE as builder_base
+ARG OS_BASE_IMAGE=mcr.microsoft.com/windows/servercore:ltsc2022
+FROM ${OS_BASE_IMAGE}
 
 ARG PCRE2_VERSION=10.44
 ARG OPENSSL_VERSION=3.3.2
 ARG GOLANG_VERSION=1.23.2
+ARG VS_BUILDTOOLS_VERSION=17
 
 ARG MSYSTEM=UCRT64
 
 ARG BUILD_ARCH=x64
-ARG CPU_MODEL=AMD64
 
 ARG MAJOR_VERSION=7.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.8
 
 ARG MINGW_URL=https://github.com/niXman/mingw-builds-binaries/releases/download/14.2.0-rt_v12-rev0/x86_64-14.2.0-release-win32-seh-ucrt-rt_v12-rev0.7z
-ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/17/release/vs_buildtools.exe
+ARG VS_BUILDTOOLS_URL=https://aka.ms/vs/$VS_BUILDTOOLS_VERSION/release/vs_buildtools.exe
 ARG GOLANG_URL=https://go.dev/dl/go$GOLANG_VERSION.windows-amd64.zip
 ARG MSYS2_URL=https://api.github.com/repos/msys2/msys2-installer/releases/latest
 
@@ -24,8 +24,8 @@ ARG PCRE2_URL=https://github.com/PhilipHazel/pcre2/releases/download/pcre2-$PCRE
 ARG OPENSSL_URL=https://github.com/openssl/openssl/releases/download/openssl-$OPENSSL_VERSION/openssl-$OPENSSL_VERSION.tar.gz
 
 ENV ZBX_VERSION=$ZBX_VERSION `
-    BUILD_ARCH=$BUILD_ARCH CPU_MODEL=$CPU_MODEL `
-    MINGW_URL=$MINGW_URL VS_BUILDTOOLS_URL=$VS_BUILDTOOLS_URL GOLANG_VERSION=$GOLANG_VERSION MSYS2_URL=$MSYS2_URL `
+    BUILD_ARCH=$BUILD_ARCH `
+    MINGW_URL=$MINGW_URL VS_BUILDTOOLS_URL=$VS_BUILDTOOLS_URL VS_BUILDTOOLS_VERSION=$VS_BUILDTOOLS_VERSION GOLANG_VERSION=$GOLANG_VERSION MSYS2_URL=$MSYS2_URL `
     PCRE2_VERSION=$PCRE2_VERSION OPENSSL_VERSION=$OPENSSL_VERSION `
     PCRE2_URL=$PCRE2_URL OPENSSL_URL=$OPENSSL_URL `
     CHERE_INVOKING=yes MSYSTEM=$MSYSTEM
@@ -39,10 +39,10 @@ LABEL org.opencontainers.image.title="Zabbix agent 2 build base for Windows" `
       org.opencontainers.image.documentation="https://www.zabbix.com/documentation/${MAJOR_VERSION}/manual/installation/containers" `
       org.opencontainers.image.version="${ZBX_VERSION}"
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
 ADD --checksum=sha256:21c6f0523abfd37a2f5cc85879d0ff32723ab496347f0d20793df888ecec3957 $PCRE2_URL C:\pcre2.zip
 ADD --checksum=sha256:2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281 $OPENSSL_URL C:\openssl.tar.gz
+
+SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
 RUN Set-Location -Path $env:SystemDrive\.; `
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
@@ -54,6 +54,9 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     [Environment]::SetEnvironmentVariable('BUILD_OUTPUT', $env:BUILD_OUTPUT, [EnvironmentVariableTarget]::Machine); `
     $env:BUILD_SRC = [string]::Format('{0}\build_src', $env:SystemDrive); `
     [Environment]::SetEnvironmentVariable('BUILD_SRC', $env:BUILD_SRC, [EnvironmentVariableTarget]::Machine); `
+    `
+    New-Item -ItemType directory -Path $env:BUILD_OUTPUT -Force | Out-Null; `
+    New-Item -ItemType directory -Path $env:BUILD_SRC -Force | Out-Null; `
     `
     Write-Host ('Downloading {0} ...' -f $env:GOLANG_URL); `
     Invoke-WebRequest -OutFile $env:TEMP\go_lang.zip -Uri $env:GOLANG_URL; `
@@ -130,9 +133,9 @@ RUN Set-Location -Path $env:SystemDrive\.; `
         --norestart `
         --nocache `
         --installPath """${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\BuildTools""" `
-        --channelUri https://aka.ms/vs/17/release/channel `
-        --installChannelUri https://aka.ms/vs/17/release/channel `
-        --channelId VisualStudio.17.Release `
+        --channelUri https://aka.ms/vs/$env:VS_BUILDTOOLS_VERSION/release/channel `
+        --installChannelUri https://aka.ms/vs/$env:VS_BUILDTOOLS_VERSION/release/channel `
+        --channelId VisualStudio.$env:VS_BUILDTOOLS_VERSION.Release `
         # https://docs.microsoft.com/en-us/visualstudio/install/workload-component-id-vs-build-tools?view=vs-2022
         --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64; `
     if ($err = dir $Env:TEMP -Filter dd_setup_*_errors.log | where Length -gt 0 | Get-Content) { `
@@ -147,14 +150,8 @@ RUN Set-Location -Path $env:SystemDrive\.; `
     Write-Host 'Visual Studio components installation cleanup'; `
     Get-ChildItem -Path """${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer""" -Directory -Recurse | Remove-Item -Force -Recurse; `
     `
-    Write-Host 'Removing downloaded...'; `
-    Remove-Item -Force -Recurse $env:TEMP\*; `
     Write-Host 'Build environment is ready...'; `
     `
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; `
-    `
-    New-Item -ItemType directory -Path $env:BUILD_OUTPUT -Force | Out-Null; `
-    New-Item -ItemType directory -Path $env:BUILD_SRC -Force | Out-Null; `
     Set-Location -Path $env:BUILD_SRC; `
     `
     Write-Host 'Extracting PCRE2 archive ...'; `
