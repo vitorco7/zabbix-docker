@@ -1,18 +1,21 @@
 # syntax=docker/dockerfile:1
 # escape=`
+ARG OS_BASE_IMAGE=mcr.microsoft.com/powershell:lts-nanoserver-ltsc2022
+
 ARG MAJOR_VERSION=5.0
 ARG ZBX_VERSION=${MAJOR_VERSION}.45
+
 ARG BUILD_BASE_IMAGE=zabbix-build-agent:ltsc2022-agent-${ZBX_VERSION}
 
-ARG BASE_IMAGE=mcr.microsoft.com/powershell:lts-nanoserver-ltsc2022
-
 FROM ${BUILD_BASE_IMAGE} AS builder
-
-FROM $BASE_IMAGE
+FROM ${OS_BASE_IMAGE}
 
 ARG MAJOR_VERSION
 ARG ZBX_VERSION
 ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
+
+ENV ZABBIX_USER_HOME_DIR="C:\zabbix" `
+    ZABBIX_CONF_DIR="C:\zabbix\conf"
 
 LABEL org.opencontainers.image.title="Zabbix agent" `
       org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" `
@@ -36,25 +39,24 @@ USER ContainerAdministrator
 RUN $env:PATH = [string]::Format('{0}\zabbix\sbin;{0}\zabbix\bin;', $env:SystemDrive) + $env:PATH; `
     [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine); `
     `
-    $env:ZBX_HOME = [string]::Format('{0}\zabbix', $env:SystemDrive); `
-    [Environment]::SetEnvironmentVariable('ZBX_HOME', $env:ZBX_HOME, [EnvironmentVariableTarget]::Machine); `
+    [Environment]::SetEnvironmentVariable('ZABBIX_USER_HOME_DIR', $env:ZABBIX_USER_HOME_DIR, [EnvironmentVariableTarget]::Machine); `
     `
     Write-Host ('Verifying Zabbix agent {0} ...' -f $env:ZBX_VERSION); `
     zabbix_agentd.exe -V;
 
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
-    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\conf\zabbix_agentd.d | Out-Null; `
-    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\enc | Out-Null; `
-    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\modules | Out-Null; `
-    New-Item -Force -ItemType directory -Path $env:ZBX_HOME\buffer | Out-Null; `
+    New-Item -Force -ItemType directory -Path $env:ZABBIX_CONF_DIR | Out-Null; `
+    New-Item -Force -ItemType directory -Path $env:ZABBIX_CONF_DIR\zabbix_agentd.d | Out-Null; `
+    New-Item -Force -ItemType directory -Path $env:ZABBIX_USER_HOME_DIR\enc | Out-Null; `
+    New-Item -Force -ItemType directory -Path $env:ZABBIX_USER_HOME_DIR\enc_internal | Out-Null; `
     `
     net accounts /MaxPWAge:unlimited; `
     net user /add zabbix /expire:never /passwordreq:no; `
-    $acl = Get-Acl -Path $env:ZBX_HOME; `
+    $acl = Get-Acl -Path $env:ZABBIX_USER_HOME_DIR; `
     $ace = New-Object Security.AccessControl.FileSystemAccessRule ('zabbix', 'Modify', 'ContainerInherit, ObjectInherit', 'InheritOnly', 'Allow'); `
     $acl.AddAccessRule($ace); `
-    Set-Acl -AclObject $acl -Path $env:ZBX_HOME;
+    Set-Acl -AclObject $acl -Path $env:ZABBIX_USER_HOME_DIR;
 
 USER zabbix
 
