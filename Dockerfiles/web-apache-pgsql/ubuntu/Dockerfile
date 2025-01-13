@@ -14,7 +14,8 @@ ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
 ENV TERM=xterm \
     ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
-    ZABBIX_CONF_DIR="/etc/zabbix"
+    ZABBIX_CONF_DIR="/etc/zabbix" \
+    ZABBIX_WWW_ROOT="/usr/share/zabbix"
 
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix web-interface based on Apache2 web server with PostgreSQL database support" \
@@ -28,7 +29,7 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
 
 STOPSIGNAL SIGTERM
 
-COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
+COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "${ZABBIX_WWW_ROOT}"]
 COPY ["conf/etc/", "/etc/"]
 
 RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
@@ -37,21 +38,24 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
     echo "#!/bin/sh\nexit 101" > /usr/sbin/policy-rc.d && \
     INSTALL_PKGS="bash \
             tzdata \
-            apache2 \
             curl \
-            libapache2-mod-php \
             ca-certificates \
+            apache2 \ 
             locales \
             libldap-common \
             php8.3-bcmath \
+            php8.3-fpm \
             php8.3-gd \
             php8.3-ldap \
             php8.3-mbstring \
             php8.3-xml \
             php8.3-pgsql \
-            postgresql-client" && \
+            postgresql-client \
+            supervisor" && \
     apt-get -y update && \
     DEBIAN_FRONTEND=noninteractive apt-get -y \
+            -o Dpkg::Options::="--force-confdef" \
+            -o Dpkg::Options::="--force-confold" \
             --no-install-recommends install \
         ${INSTALL_PKGS} && \
     groupadd \
@@ -69,50 +73,45 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
     mkdir -p ${ZABBIX_CONF_DIR} && \
     mkdir -p ${ZABBIX_CONF_DIR}/web && \
     mkdir -p ${ZABBIX_CONF_DIR}/web/certs && \
+    mkdir -p /var/lib/php/session && \
+    find /etc/ -name '*.dpkg-dist' | xargs rm -f && \
     rm -f /etc/apache2/sites-available/* && \
     rm -f /etc/apache2/sites-enabled/* && \
-    /usr/sbin/a2enmod ssl && \
-    sed -ri \
-            -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
-            -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
-        "/etc/apache2/apache2.conf" && \
-    sed -ri \
-            -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
-            -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
-        "/etc/apache2/conf-available/other-vhosts-access-log.conf" && \
-    sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf && \
-    sed -i 's/Listen 443/Listen 8443/g' /etc/apache2/ports.conf && \
-    sed -i 's|/var/run/apache2$SUFFIX|/tmp|g' /etc/apache2/envvars && \
-    rm -f /var/run/apache2/apache2.pid && \
-    cd /usr/share/zabbix/ && \
+    rm -f /etc/php/8.3/fpm/pool.d/www.conf && \
+    rm -f /var/run/apache2/ && \
+    cd ${ZABBIX_WWW_ROOT}/ && \
     rm -f conf/zabbix.conf.php conf/maintenance.inc.php conf/zabbix.conf.php.example && \
     rm -rf tests && \
     rm -f locale/add_new_language.sh locale/update_po.sh locale/make_mo.sh && \
-    find /usr/share/zabbix/locale -name '*.po' | xargs rm -f && \
-    find /usr/share/zabbix/locale -name '*.sh' | xargs rm -f && \
-    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
-    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
+    find ${ZABBIX_WWW_ROOT}/locale -name '*.po' | xargs rm -f && \
+    find ${ZABBIX_WWW_ROOT}/locale -name '*.sh' | xargs rm -f && \
+    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "${ZABBIX_WWW_ROOT}/conf/zabbix.conf.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "${ZABBIX_WWW_ROOT}/conf/maintenance.inc.php" && \
     mkdir -p /var/lib/locales/supported.d/ && \
     rm -f /var/lib/locales/supported.d/local && \
-    cat /usr/share/zabbix/include/locales.inc.php | grep display | grep true | awk '{$1=$1};1' | \
+    cat ${ZABBIX_WWW_ROOT}/include/locales.inc.php | grep display | grep true | awk '{$1=$1};1' | \
         cut -d"'" -f 2 | sort | \
         xargs -I '{}' bash -c 'echo "{}.UTF-8 UTF-8" >> /var/lib/locales/supported.d/local' && \
     dpkg-reconfigure locales && \
-    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chown --quiet -R zabbix:root /etc/apache2/ /etc/php/8.3/ && \
-    chgrp -R 0 /etc/apache2/ /etc/php/8.3/ && \
-    chmod -R g=u /etc/apache2/ /etc/php/8.3/
+    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chgrp -R 0 ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chown --quiet -R zabbix:root /etc/apache2/ /etc/php/8.3/fpm/ && \
+    chgrp -R 0 /etc/apache2/ /etc/php/8.3/fpm/ && \
+    chmod -R g=u /etc/apache2/ /etc/php/8.3/fpm/ && \
+    chown --quiet -R zabbix:root /var/lib/php/session/ && \
+    chgrp -R 0 /var/lib/php/session/ && \
+    chmod -R g=u /var/lib/php/session/
+
+HEALTHCHECK --interval=1m30s --timeout=3s --retries=3 --start-period=40s --start-interval=5s \
+    CMD curl -f http://localhost:8080/ping || exit 1
 
 EXPOSE 8080/TCP 8443/TCP
 
-WORKDIR /usr/share/zabbix
+WORKDIR ${ZABBIX_WWW_ROOT}
 
 COPY ["docker-entrypoint.sh", "/usr/bin/"]
 
 USER 1997
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-
-CMD ["/usr/sbin/apache2ctl", "-D", "FOREGROUND"]
