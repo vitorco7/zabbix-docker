@@ -117,10 +117,9 @@ update_config_multiple_var() {
 }
 
 file_process_from_env() {
-    local config_path=$1
-    local var_name=$2
-    local file_name=$3
-    local var_value=$4
+    local var_name=$1
+    local file_name=$2
+    local var_value=$3
 
     if [ ! -z "$var_value" ]; then
         echo -n "$var_value" > "${ZABBIX_INTERNAL_ENC_DIR}/$var_name"
