@@ -18,14 +18,19 @@ fi
 # Default timezone for web interface
 : ${PHP_TZ:="Europe/Riga"}
 
-# Default user
+# Default user settings
 : ${DAEMON_USER:="nginx"}
+: ${DAEMON_GROUP:="nginx"}
 
 # Default directories
-# Web interface www-root directory
-ZABBIX_WWW_ROOT="/usr/share/zabbix"
 # Nginx main configuration file
 NGINX_CONF_FILE="/etc/nginx/nginx.conf"
+# Nginx virtual hosts configuration directory
+NGINX_CONFD_DIR="/etc/nginx/conf.d"
+# Directory with SSL certificate files for Nginx
+NGINX_SSL_CONFIG_DIR="/etc/ssl/nginx"
+# PHP-FPM configuration file
+PHP_CONFIG_FILE="/etc/php-fpm.d/zabbix.conf"
 
 # usage: file_env VAR [DEFAULT]
 # as example: file_env 'MYSQL_PASSWORD' 'zabbix'
@@ -134,12 +139,15 @@ check_db_connect() {
 }
 
 prepare_web_server() {
-    NGINX_CONFD_DIR="/etc/nginx/conf.d"
-    NGINX_SSL_CONFIG="/etc/ssl/nginx"
+    if [ "$(id -u)" == '0' ]; then
+        sed -i -e "/^[#;] user/s/.*/user ${DAEMON_USER};/" "$NGINX_CONF_FILE"
+    fi
 
     if [ ! -f "/proc/net/if_inet6" ]; then
         sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx.conf"
+        sed -i '/allow ::1/d' "$ZABBIX_CONF_DIR/nginx.conf"
         sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx_ssl.conf"
+        sed -i '/allow ::1/d' "$ZABBIX_CONF_DIR/nginx_ssl.conf"
     fi
 
     echo "** Adding Zabbix virtual host (HTTP)"
@@ -149,7 +157,7 @@ prepare_web_server() {
         echo "**** Impossible to enable HTTP virtual host"
     fi
 
-    if [ -f "$NGINX_SSL_CONFIG/ssl.crt" ] && [ -f "$NGINX_SSL_CONFIG/ssl.key" ] && [ -f "$NGINX_SSL_CONFIG/dhparam.pem" ]; then
+    if [ -f "$NGINX_SSL_CONFIG_DIR/ssl.crt" ] && [ -f "$NGINX_SSL_CONFIG_DIR/ssl.key" ] && [ -f "$NGINX_SSL_CONFIG_DIR/dhparam.pem" ]; then
         echo "** Enable SSL support for Nginx"
         if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
             ln -sfT "$ZABBIX_CONF_DIR/nginx_ssl.conf" "$NGINX_CONFD_DIR/nginx_ssl.conf"
@@ -159,12 +167,53 @@ prepare_web_server() {
     else
         echo "**** Impossible to enable SSL support for Nginx. Certificates are missed."
     fi
+
+    FCGI_READ_TIMEOUT=$(expr ${ZBX_MAXEXECUTIONTIME} + 1)
+    sed -i \
+        -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
+    "$ZABBIX_CONF_DIR/nginx.conf"
+
+    : ${HTTP_INDEX_FILE:="index.php"}
+    sed -i \
+        -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
+    "$ZABBIX_CONF_DIR/nginx.conf"
+
+    if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
+        sed -i \
+            -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
+        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
+
+        sed -i \
+            -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
+        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
+    fi
+
+    : ${ENABLE_WEB_ACCESS_LOG:="true"}
+
+    if [ "${ENABLE_WEB_ACCESS_LOG,,}" == "false" ]; then
+        sed -ri \
+            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
+            "$NGINX_CONF_FILE"
+        sed -ri \
+            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
+            "$ZABBIX_CONF_DIR/nginx.conf"
+        sed -ri \
+            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
+            "$ZABBIX_CONF_DIR/nginx_ssl.conf"
+    fi
+
+    : ${EXPOSE_WEB_SERVER_INFO:="on"}
+
+    [[ "${EXPOSE_WEB_SERVER_INFO}" != "off" ]] && EXPOSE_WEB_SERVER_INFO="on"
+
+    export EXPOSE_WEB_SERVER_INFO=${EXPOSE_WEB_SERVER_INFO}
+    sed -i \
+        -e "s/{EXPOSE_WEB_SERVER_INFO}/${EXPOSE_WEB_SERVER_INFO}/g" \
+    "$NGINX_CONF_FILE"
 }
 
-prepare_zbx_web_config() {
-    echo "** Preparing Zabbix frontend configuration file"
-
-    PHP_CONFIG_FILE="/etc/php-fpm.d/zabbix.conf"
+prepare_zbx_php_config() {
+    echo "** Preparing PHP configuration"
 
     export PHP_FPM_PM=${PHP_FPM_PM:-"dynamic"}
     export PHP_FPM_PM_MAX_CHILDREN=${PHP_FPM_PM_MAX_CHILDREN:-"50"}
@@ -174,12 +223,10 @@ prepare_zbx_web_config() {
     export PHP_FPM_PM_MAX_REQUESTS=${PHP_FPM_PM_MAX_REQUESTS:-"0"}
 
     if [ "$(id -u)" == '0' ]; then
-        sed -i -e "/^[#;] user/s/.*/user ${DAEMON_USER};/" "$NGINX_CONF_FILE"
-
         echo "user = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-        echo "group = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
+        echo "group = ${DAEMON_GROUP}" >> "$PHP_CONFIG_FILE"
         echo "listen.owner = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-        echo "listen.group = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
+        echo "listen.group = ${DAEMON_GROUP}" >> "$PHP_CONFIG_FILE"
     fi
 
     : ${ZBX_DENY_GUI_ACCESS:="false"}
@@ -227,55 +274,14 @@ prepare_zbx_web_config() {
     export ZBX_SSO_SP_KEY=${ZBX_SSO_SP_KEY}
     export ZBX_SSO_SP_CERT=${ZBX_SSO_SP_CERT}
     export ZBX_SSO_IDP_CERT=${ZBX_SSO_IDP_CERT}
+}
 
+prepare_zbx_config() {
     if [ -n "${ZBX_SESSION_NAME}" ]; then
         cp "$ZABBIX_WWW_ROOT/include/defines.inc.php" "/tmp/defines.inc.php_tmp"
         sed "/ZBX_SESSION_NAME/s/'[^']*'/'${ZBX_SESSION_NAME}'/2" "/tmp/defines.inc.php_tmp" > "$ZABBIX_WWW_ROOT/include/defines.inc.php"
         rm -f "/tmp/defines.inc.php_tmp"
     fi
-
-    FCGI_READ_TIMEOUT=$(expr ${ZBX_MAXEXECUTIONTIME} + 1)
-    sed -i \
-        -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
-    "$ZABBIX_CONF_DIR/nginx.conf"
-
-    : ${HTTP_INDEX_FILE:="index.php"}
-    sed -i \
-        -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-    "$ZABBIX_CONF_DIR/nginx.conf"
-
-    if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
-        sed -i \
-            -e "s/{FCGI_READ_TIMEOUT}/${FCGI_READ_TIMEOUT}/g" \
-        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
-
-        sed -i \
-            -e "s/{HTTP_INDEX_FILE}/${HTTP_INDEX_FILE}/g" \
-        "$ZABBIX_CONF_DIR/nginx_ssl.conf"
-    fi
-
-    : ${ENABLE_WEB_ACCESS_LOG:="true"}
-
-    if [ "${ENABLE_WEB_ACCESS_LOG,,}" == "false" ]; then
-        sed -ri \
-            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
-            "$NGINX_CONF_FILE"
-        sed -ri \
-            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
-            "$ZABBIX_CONF_DIR/nginx.conf"
-        sed -ri \
-            -e 's!^(\s*access_log).+\;!\1 off\;!g' \
-            "$ZABBIX_CONF_DIR/nginx_ssl.conf"
-    fi
-
-    : ${EXPOSE_WEB_SERVER_INFO:="on"}
-
-    [[ "${EXPOSE_WEB_SERVER_INFO}" != "off" ]] && EXPOSE_WEB_SERVER_INFO="on"
-
-    export EXPOSE_WEB_SERVER_INFO=${EXPOSE_WEB_SERVER_INFO}
-    sed -i \
-        -e "s/{EXPOSE_WEB_SERVER_INFO}/${EXPOSE_WEB_SERVER_INFO}/g" \
-    "$NGINX_CONF_FILE"
 }
 
 #################################################
@@ -284,8 +290,9 @@ echo "** Deploying Zabbix web-interface (Nginx) with MySQL database"
 
 check_variables
 check_db_connect
+prepare_zbx_php_config
 prepare_web_server
-prepare_zbx_web_config
+prepare_zbx_config
 
 echo "########################################################"
 
