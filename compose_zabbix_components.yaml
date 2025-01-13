@@ -34,7 +34,8 @@ services:
       cpus: '0.5'
       memory: 512M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_srv
+   - path: ${ENV_VARS_DIRECTORY}/.env_srv
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_srv_override
      required: false
   networks:
@@ -58,8 +59,8 @@ services:
    - net.ipv4.conf.all.send_redirects=0
 #   - net.ipv4.ping_group_range=0 1995
   labels:
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-server"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "server"
 
  server-mysql-db-init:
   init: true
@@ -73,7 +74,8 @@ services:
 #  volumes:
 #   - dbsocket:/var/run/mysqld/
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_mysql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql
+     required: true
   secrets:
    - MYSQL_USER
    - MYSQL_PASSWORD
@@ -99,7 +101,8 @@ services:
 #   - pgsql_socket:/var/run/postgresql
   command: init_db_only
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+     required: true
   secrets:
    - POSTGRES_USER
    - POSTGRES_PASSWORD
@@ -117,7 +120,8 @@ services:
 #  volumes:
 #   - mysql_socket:/var/run/mysqld/
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_mysql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql
+     required: true
   secrets:
    - MYSQL_USER
    - MYSQL_PASSWORD
@@ -141,7 +145,8 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
 #   - pgsql_socket:/var/run/postgresql
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+     required: true
   secrets:
    - POSTGRES_USER
    - POSTGRES_PASSWORD
@@ -182,7 +187,8 @@ services:
       cpus: '0.3'
       memory: 256M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_prx
+   - path: ${ENV_VARS_DIRECTORY}/.env_prx
+     required: true
   networks:
    backend:
    frontend:
@@ -197,8 +203,8 @@ services:
    - net.ipv4.conf.all.send_redirects=0
 #   - net.ipv4.ping_group_range=0 1995
   labels:
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-proxy"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "proxy"
 
  proxy-sqlite3:
   extends:
@@ -210,7 +216,8 @@ services:
      protocol: tcp
      app_protocol: zabbix-trapper
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_prx_sqlite3
+   - path: ${ENV_VARS_DIRECTORY}/.env_prx_sqlite3
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_prx_sqlite3_override
      required: false
   networks:
@@ -234,7 +241,8 @@ services:
 #  volumes:
 #   - dbsocket:/var/run/mysqld/
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_mysql_proxy
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql_proxy
+     required: true
   secrets:
    - MYSQL_USER
    - MYSQL_PASSWORD
@@ -261,8 +269,10 @@ services:
 #  volumes:
 #   - mysql_socket:/var/run/mysqld/
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_mysql_proxy
-   - ${ENV_VARS_DIRECTORY}/.env_prx_mysql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql_proxy
+     required: true
+   - path: ${ENV_VARS_DIRECTORY}/.env_prx_mysql
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_prx_mysql_override
      required: false
   secrets:
@@ -302,7 +312,9 @@ services:
    - /etc/localtime:/etc/localtime:ro
    - ${DATA_DIRECTORY}/etc/ssl/apache2:/etc/ssl/apache2:ro
    - ${DATA_DIRECTORY}/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
-  tmpfs: /tmp
+  tmpfs:
+   - /tmp
+   - /var/lib/php/session:mode=770,uid=1997,gid=1995
   deploy:
    resources:
     limits:
@@ -312,15 +324,17 @@ services:
       cpus: '0.5'
       memory: 256M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_web
+   - path: ${ENV_VARS_DIRECTORY}/.env_web
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_web_override
      required: false
   healthcheck:
-   test: ["CMD", "curl", "-f", "http://localhost:8080/"]
-   interval: 10s
-   timeout: 5s
+   test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
+   interval: 1m30s
+   timeout: 3s
    retries: 3
-   start_period: 30s
+   start_period: 40s
+   start_interval: 5s
   networks:
    database:
    backend:
@@ -329,8 +343,8 @@ services:
   sysctls:
    - net.core.somaxconn=65535
   labels:
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-frontend"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "frontend"
    com.zabbix.webserver: "apache2"
 
  web-apache-mysql:
@@ -339,7 +353,8 @@ services:
 #  volumes:
 #   - mysql_socket:/var/run/mysqld/
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_mysql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_mysql
+     required: true
   secrets:
    - MYSQL_USER
    - MYSQL_PASSWORD
@@ -359,7 +374,8 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
 #   - pgsql_socket:/var/run/postgresql
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+     required: true
   secrets:
    - POSTGRES_USER
    - POSTGRES_PASSWORD
@@ -389,7 +405,9 @@ services:
    - /etc/localtime:/etc/localtime:ro
    - ${DATA_DIRECTORY}/etc/ssl/nginx:/etc/ssl/nginx:ro
    - ${DATA_DIRECTORY}/usr/share/zabbix/modules/:/usr/share/zabbix/modules/:ro
-  tmpfs: /tmp
+  tmpfs:
+   - /tmp
+   - /var/lib/php/session:mode=770,uid=1997,gid=1995
   deploy:
    resources:
     limits:
@@ -399,15 +417,17 @@ services:
       cpus: '0.5'
       memory: 256M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_web
+   - path: ${ENV_VARS_DIRECTORY}/.env_web
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_web_override
      required: false
   healthcheck:
    test: ["CMD", "curl", "-f", "http://localhost:8080/ping"]
-   interval: 10s
-   timeout: 5s
+   interval: 1m30s
+   timeout: 3s
    retries: 3
-   start_period: 30s
+   start_period: 40s
+   start_interval: 5s
   networks:
    database:
    backend:
@@ -416,8 +436,8 @@ services:
   sysctls:
    - net.core.somaxconn=65535
   labels:
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-frontend"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "frontend"
    com.zabbix.webserver: "nginx"
 
  web-nginx-mysql:
@@ -450,7 +470,8 @@ services:
 #   - ${ENV_VARS_DIRECTORY}/.ZBX_DB_KEY_FILE:/run/secrets/client-key.pem:ro
 #   - pgsql_socket:/var/run/postgresql
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+   - path: ${ENV_VARS_DIRECTORY}/.env_db_pgsql
+     required: true
   secrets:
    - POSTGRES_USER
    - POSTGRES_PASSWORD
@@ -493,7 +514,8 @@ services:
       memory: 64M
    mode: global
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_agent
+   - path: ${ENV_VARS_DIRECTORY}/.env_agent
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_agent_override
      required: false
   privileged: true
@@ -506,8 +528,8 @@ services:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix agent"
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-agentd"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "agent"
 
  agent2:
   init: true
@@ -544,7 +566,8 @@ services:
       memory: 64M
    mode: global
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_agent
+   - path: ${ENV_VARS_DIRECTORY}/.env_agent
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_agent_override
      required: false
   privileged: true
@@ -557,8 +580,8 @@ services:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix agent 2"
-   com.zabbix.company: "Zabbix LLC"
-   com.zabbix.component: "zabbix-agent2"
+   com.zabbix.company: "Zabbix SIA"
+   com.zabbix.component: "agent2"
 
  java-gateway:
   profiles:
@@ -580,7 +603,8 @@ services:
       cpus: '0.25'
       memory: 256M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_java
+   - path: ${ENV_VARS_DIRECTORY}/.env_java
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_java_override
      required: false
   networks:
@@ -591,7 +615,7 @@ services:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix Java Gateway"
-   com.zabbix.company: "Zabbix LLC"
+   com.zabbix.company: "Zabbix SIA"
    com.zabbix.component: "java-gateway"
 
  snmptraps:
@@ -622,7 +646,8 @@ services:
       cpus: '0.25'
       memory: 128M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_snmptraps
+   - path: ${ENV_VARS_DIRECTORY}/.env_snmptraps
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_snmptraps_override
      required: false
   networks:
@@ -633,7 +658,7 @@ services:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix snmptraps"
-   com.zabbix.company: "Zabbix LLC"
+   com.zabbix.company: "Zabbix SIA"
    com.zabbix.component: "snmptraps"
 
  web-service:
@@ -647,6 +672,7 @@ services:
      protocol: tcp
   restart: "${RESTART_POLICY}"
   attach: false
+  read_only: true
   volumes:
    - ${DATA_DIRECTORY}/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
   tmpfs: /tmp
@@ -661,7 +687,8 @@ services:
       cpus: '0.25'
       memory: 256M
   env_file:
-   - ${ENV_VARS_DIRECTORY}/.env_web_service
+   - path: ${ENV_VARS_DIRECTORY}/.env_web_service
+     required: true
    - path: ${ENV_VARS_DIRECTORY}/.env_web_service_override
      required: false
   networks:
@@ -671,5 +698,5 @@ services:
   stop_grace_period: 5s
   labels:
    com.zabbix.description: "Zabbix web service"
-   com.zabbix.company: "Zabbix LLC"
+   com.zabbix.company: "Zabbix SIA"
    com.zabbix.component: "web-service"

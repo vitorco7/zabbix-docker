@@ -14,7 +14,8 @@ ARG ZBX_SOURCES=https://git.zabbix.com/scm/zbx/zabbix.git
 
 ENV TERM=xterm \
     ZBX_VERSION=${ZBX_VERSION} ZBX_SOURCES=${ZBX_SOURCES} \
-    ZABBIX_CONF_DIR="/etc/zabbix"
+    ZABBIX_CONF_DIR="/etc/zabbix" \
+    ZABBIX_WWW_ROOT="/usr/share/zabbix"
 
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix web-interface based on Apache2 web server with PostgreSQL database support" \
@@ -28,18 +29,18 @@ LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zab
 
 STOPSIGNAL SIGTERM
 
-COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "/usr/share/zabbix"]
+COPY --from=builder ["/tmp/zabbix-${ZBX_VERSION}/ui", "${ZABBIX_WWW_ROOT}"]
 COPY ["conf/etc/", "/etc/"]
 
 RUN set -eux && \
     INSTALL_PKGS="bash \
             tzdata \
-            apache2 \
             curl \
-            php83-apache2 \
+            apache2-proxy \
             php83-bcmath \
             php83-ctype \
             php83-curl \
+            php83-fpm \
             php83-gd \
             php83-gettext \
             php83-json \
@@ -53,7 +54,8 @@ RUN set -eux && \
             php83-xmlreader \
             php83-xmlwriter \
             php83-openssl \
-            postgresql17-client" && \
+            postgresql17-client \
+            supervisor" && \
     apk add \
             --no-cache \
             --clean-protected \
@@ -81,38 +83,40 @@ RUN set -eux && \
     mkdir -p ${ZABBIX_CONF_DIR}/web/certs && \
     rm -f "/etc/apache2/conf.d/default.conf" && \
     rm -f "/etc/apache2/conf.d/ssl.conf" && \
-    sed -ri \
-            -e 's!^(\s*CustomLog)\s+\S+!\1 /proc/self/fd/1!g' \
-            -e 's!^(\s*ErrorLog)\s+\S+!\1 /proc/self/fd/2!g' \
-        "/etc/apache2/httpd.conf" && \
-    sed -ri \
-            -e 's!^(\s*PidFile)\s+\S+!\1 "/tmp/httpd.pid"!g' \
-        "/etc/apache2/conf.d/mpm.conf" && \
-    sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/httpd.conf && \
+    rm -f "/etc/apache2/conf.d/info.conf" && \
+    rm -f "/etc/apache2/conf.d/mpm.conf" && \
+    rm -f "/etc/apache2/conf.d/proxy.conf" && \
+    rm -f "/etc/apache2/conf.d/userdir.conf" && \
+    mkdir -p /var/lib/php/session && \
+    rm -rf /etc/php83/php-fpm.d/www.conf && \
     rm -rf "/var/run/apache2/" && \
-    cd /usr/share/zabbix/ && \
+    cd ${ZABBIX_WWW_ROOT}/ && \
     rm -f conf/zabbix.conf.php conf/maintenance.inc.php conf/zabbix.conf.php.example && \
     rm -rf tests && \
     rm -f locale/add_new_language.sh locale/update_po.sh locale/make_mo.sh && \
-    find /usr/share/zabbix/locale -name '*.po' | xargs rm -f && \
-    find /usr/share/zabbix/locale -name '*.sh' | xargs rm -f && \
-    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "/usr/share/zabbix/conf/zabbix.conf.php" && \
-    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "/usr/share/zabbix/conf/maintenance.inc.php" && \
-    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chgrp -R 0 ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chmod -R g=u ${ZABBIX_CONF_DIR}/ /usr/share/zabbix/include/defines.inc.php /usr/share/zabbix/modules/ && \
-    chown --quiet -R zabbix:root /etc/apache2/ /etc/php83/ && \
-    chgrp -R 0 /etc/apache2/ /etc/php83/ && \
-    chmod -R g=u /etc/apache2/ /etc/php83/
+    find ${ZABBIX_WWW_ROOT}/locale -name '*.po' | xargs rm -f && \
+    find ${ZABBIX_WWW_ROOT}/locale -name '*.sh' | xargs rm -f && \
+    ln -s "${ZABBIX_CONF_DIR}/web/zabbix.conf.php" "${ZABBIX_WWW_ROOT}/conf/zabbix.conf.php" && \
+    ln -s "${ZABBIX_CONF_DIR}/web/maintenance.inc.php" "${ZABBIX_WWW_ROOT}/conf/maintenance.inc.php" && \
+    chown --quiet -R zabbix:root ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chgrp -R 0 ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chmod -R g=u ${ZABBIX_CONF_DIR}/ ${ZABBIX_WWW_ROOT}/include/defines.inc.php ${ZABBIX_WWW_ROOT}/modules/ && \
+    chown --quiet -R zabbix:root /etc/apache2/ /etc/php83/php-fpm.d/ /etc/php83/php-fpm.conf && \
+    chgrp -R 0 /etc/apache2/ /etc/php83/php-fpm.d/ /etc/php83/php-fpm.conf && \
+    chmod -R g=u /etc/apache2/ /etc/php83/php-fpm.d/ /etc/php83/php-fpm.conf && \
+    chown --quiet -R zabbix:root /var/lib/php/session/ && \
+    chgrp -R 0 /var/lib/php/session/ && \
+    chmod -R g=u /var/lib/php/session/
+
+HEALTHCHECK --interval=1m30s --timeout=3s --retries=3 --start-period=40s --start-interval=5s \
+    CMD curl -f http://localhost:8080/ping || exit 1
 
 EXPOSE 8080/TCP 8443/TCP
 
-WORKDIR /usr/share/zabbix
+WORKDIR ${ZABBIX_WWW_ROOT}
 
 COPY ["docker-entrypoint.sh", "/usr/bin/"]
 
 USER 1997
 
 ENTRYPOINT ["docker-entrypoint.sh"]
-
-CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
