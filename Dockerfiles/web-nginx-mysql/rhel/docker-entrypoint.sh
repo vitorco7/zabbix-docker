@@ -20,14 +20,19 @@ fi
 # Default timezone for web interface
 : ${PHP_TZ:="Europe/Riga"}
 
-# Default user
+# Default user settings
 : ${DAEMON_USER:="nginx"}
+: ${DAEMON_GROUP:="nginx"}
 
 # Default directories
-# Web interface www-root directory
-ZABBIX_WWW_ROOT="/usr/share/zabbix"
 # Nginx main configuration file
 NGINX_CONF_FILE="/etc/nginx/nginx.conf"
+# Nginx virtual hosts configuration directory
+NGINX_CONFD_DIR="/etc/nginx/conf.d"
+# Directory with SSL certificate files for Nginx
+NGINX_SSL_CONFIG_DIR="/etc/ssl/nginx"
+# PHP-FPM configuration file
+PHP_CONFIG_FILE="/etc/php-fpm.d/zabbix.conf"
 
 # usage: file_env VAR [DEFAULT]
 # as example: file_env 'MYSQL_PASSWORD' 'zabbix'
@@ -136,97 +141,33 @@ check_db_connect() {
 }
 
 prepare_web_server() {
-    NGINX_CONFD_DIR="/etc/nginx/conf.d"
-    NGINX_SSL_CONFIG="/etc/ssl/nginx"
+    if [ "$(id -u)" == '0' ]; then
+        sed -i -e "/^[#;] user/s/.*/user ${DAEMON_USER};/" "$NGINX_CONF_FILE"
+    fi
 
     if [ ! -f "/proc/net/if_inet6" ]; then
         sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx.conf"
+        sed -i '/allow ::1/d' "$ZABBIX_CONF_DIR/nginx.conf"
         sed -i '/listen \[::\]/d' "$ZABBIX_CONF_DIR/nginx_ssl.conf"
+        sed -i '/allow ::1/d' "$ZABBIX_CONF_DIR/nginx_ssl.conf"
     fi
 
     echo "** Adding Zabbix virtual host (HTTP)"
     if [ -f "$ZABBIX_CONF_DIR/nginx.conf" ]; then
-        ln -s "$ZABBIX_CONF_DIR/nginx.conf" "$NGINX_CONFD_DIR"
+        ln -sfT "$ZABBIX_CONF_DIR/nginx.conf" "$NGINX_CONFD_DIR/nginx.conf"
     else
         echo "**** Impossible to enable HTTP virtual host"
     fi
 
-    if [ -f "$NGINX_SSL_CONFIG/ssl.crt" ] && [ -f "$NGINX_SSL_CONFIG/ssl.key" ] && [ -f "$NGINX_SSL_CONFIG/dhparam.pem" ]; then
+    if [ -f "$NGINX_SSL_CONFIG_DIR/ssl.crt" ] && [ -f "$NGINX_SSL_CONFIG_DIR/ssl.key" ] && [ -f "$NGINX_SSL_CONFIG_DIR/dhparam.pem" ]; then
         echo "** Enable SSL support for Nginx"
         if [ -f "$ZABBIX_CONF_DIR/nginx_ssl.conf" ]; then
-            ln -s "$ZABBIX_CONF_DIR/nginx_ssl.conf" "$NGINX_CONFD_DIR"
+            ln -sfT "$ZABBIX_CONF_DIR/nginx_ssl.conf" "$NGINX_CONFD_DIR/nginx_ssl.conf"
         else
             echo "**** Impossible to enable HTTPS virtual host"
         fi
     else
         echo "**** Impossible to enable SSL support for Nginx. Certificates are missed."
-    fi
-}
-
-prepare_zbx_web_config() {
-    echo "** Preparing Zabbix frontend configuration file"
-
-    PHP_CONFIG_FILE="/etc/php-fpm.d/zabbix.conf"
-
-    export PHP_FPM_PM=${PHP_FPM_PM:-"dynamic"}
-    export PHP_FPM_PM_MAX_CHILDREN=${PHP_FPM_PM_MAX_CHILDREN:-"50"}
-    export PHP_FPM_PM_START_SERVERS=${PHP_FPM_PM_START_SERVERS:-"5"}
-    export PHP_FPM_PM_MIN_SPARE_SERVERS=${PHP_FPM_PM_MIN_SPARE_SERVERS:-"5"}
-    export PHP_FPM_PM_MAX_SPARE_SERVERS=${PHP_FPM_PM_MAX_SPARE_SERVERS:-"35"}
-    export PHP_FPM_PM_MAX_REQUESTS=${PHP_FPM_PM_MAX_REQUESTS:-"0"}
-
-    if [ "$(id -u)" == '0' ]; then
-        sed -i -e "/^[#;] user/s/.*/user ${DAEMON_USER};/" "$NGINX_CONF_FILE"
-
-        echo "user = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-        echo "group = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-        echo "listen.owner = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-        echo "listen.group = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
-    fi
-
-    : ${ZBX_DENY_GUI_ACCESS:="false"}
-    export ZBX_DENY_GUI_ACCESS=${ZBX_DENY_GUI_ACCESS,,}
-    export ZBX_GUI_ACCESS_IP_RANGE=${ZBX_GUI_ACCESS_IP_RANGE:-"['127.0.0.1']"}
-    export ZBX_GUI_WARNING_MSG=${ZBX_GUI_WARNING_MSG:-"Zabbix is under maintenance."}
-
-    export ZBX_MAXEXECUTIONTIME=${ZBX_MAXEXECUTIONTIME:-"600"}
-    export ZBX_MEMORYLIMIT=${ZBX_MEMORYLIMIT:-"128M"}
-    export ZBX_POSTMAXSIZE=${ZBX_POSTMAXSIZE:-"16M"}
-    export ZBX_UPLOADMAXFILESIZE=${ZBX_UPLOADMAXFILESIZE:-"2M"}
-    export ZBX_MAXINPUTTIME=${ZBX_MAXINPUTTIME:-"300"}
-    export PHP_TZ=${PHP_TZ}
-
-    export DB_SERVER_TYPE="MYSQL"
-    export DB_SERVER_HOST=${DB_SERVER_HOST}
-    export DB_SERVER_PORT=${DB_SERVER_PORT}
-    export DB_SERVER_DBNAME=${DB_SERVER_DBNAME}
-    export DB_SERVER_SCHEMA=${DB_SERVER_SCHEMA}
-    export DB_SERVER_USER=${DB_SERVER_ZBX_USER}
-    export DB_SERVER_PASS=${DB_SERVER_ZBX_PASS}
-    export ZBX_SERVER_HOST=${ZBX_SERVER_HOST}
-    export ZBX_SERVER_PORT=${ZBX_SERVER_PORT}
-    export ZBX_SERVER_NAME=${ZBX_SERVER_NAME}
-
-    : ${ZBX_DB_ENCRYPTION:="false"}
-    export ZBX_DB_ENCRYPTION=${ZBX_DB_ENCRYPTION,,}
-    export ZBX_DB_KEY_FILE=${ZBX_DB_KEY_FILE}
-    export ZBX_DB_CERT_FILE=${ZBX_DB_CERT_FILE}
-    export ZBX_DB_CA_FILE=${ZBX_DB_CA_FILE}
-    : ${ZBX_DB_VERIFY_HOST:="false"}
-    export ZBX_DB_VERIFY_HOST=${ZBX_DB_VERIFY_HOST,,}
-
-    : ${DB_DOUBLE_IEEE754:="true"}
-    export DB_DOUBLE_IEEE754=${DB_DOUBLE_IEEE754,,}
-
-    export ZBX_HISTORYSTORAGEURL=${ZBX_HISTORYSTORAGEURL}
-    export ZBX_HISTORYSTORAGETYPES=${ZBX_HISTORYSTORAGETYPES:-"[]"}
-
-    export ZBX_SSO_SETTINGS=${ZBX_SSO_SETTINGS:-""}
-
-    if [ -n "${ZBX_SESSION_NAME}" ]; then
-        cp "$ZABBIX_WWW_ROOT/include/defines.inc.php" "/tmp/defines.inc.php_tmp"
-        sed "/ZBX_SESSION_NAME/s/'[^']*'/'${ZBX_SESSION_NAME}'/2" "/tmp/defines.inc.php_tmp" > "$ZABBIX_WWW_ROOT/include/defines.inc.php"
-        rm -f "/tmp/defines.inc.php_tmp"
     fi
 
     FCGI_READ_TIMEOUT=$(expr ${ZBX_MAXEXECUTIONTIME} + 1)
@@ -273,14 +214,80 @@ prepare_zbx_web_config() {
     "$NGINX_CONF_FILE"
 }
 
+prepare_zbx_php_config() {
+    echo "** Preparing PHP configuration"
+
+    export PHP_FPM_PM=${PHP_FPM_PM:-"dynamic"}
+    export PHP_FPM_PM_MAX_CHILDREN=${PHP_FPM_PM_MAX_CHILDREN:-"50"}
+    export PHP_FPM_PM_START_SERVERS=${PHP_FPM_PM_START_SERVERS:-"5"}
+    export PHP_FPM_PM_MIN_SPARE_SERVERS=${PHP_FPM_PM_MIN_SPARE_SERVERS:-"5"}
+    export PHP_FPM_PM_MAX_SPARE_SERVERS=${PHP_FPM_PM_MAX_SPARE_SERVERS:-"35"}
+    export PHP_FPM_PM_MAX_REQUESTS=${PHP_FPM_PM_MAX_REQUESTS:-"0"}
+
+    if [ "$(id -u)" == '0' ]; then
+        echo "user = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
+        echo "group = ${DAEMON_GROUP}" >> "$PHP_CONFIG_FILE"
+        echo "listen.owner = ${DAEMON_USER}" >> "$PHP_CONFIG_FILE"
+        echo "listen.group = ${DAEMON_GROUP}" >> "$PHP_CONFIG_FILE"
+    fi
+
+    : ${ZBX_DENY_GUI_ACCESS:="false"}
+    export ZBX_DENY_GUI_ACCESS=${ZBX_DENY_GUI_ACCESS,,}
+    export ZBX_GUI_ACCESS_IP_RANGE=${ZBX_GUI_ACCESS_IP_RANGE:-"['127.0.0.1']"}
+    export ZBX_GUI_WARNING_MSG=${ZBX_GUI_WARNING_MSG:-"Zabbix is under maintenance."}
+
+    export ZBX_MAXEXECUTIONTIME=${ZBX_MAXEXECUTIONTIME:-"600"}
+    export ZBX_MEMORYLIMIT=${ZBX_MEMORYLIMIT:-"128M"}
+    export ZBX_POSTMAXSIZE=${ZBX_POSTMAXSIZE:-"16M"}
+    export ZBX_UPLOADMAXFILESIZE=${ZBX_UPLOADMAXFILESIZE:-"2M"}
+    export ZBX_MAXINPUTTIME=${ZBX_MAXINPUTTIME:-"300"}
+    export PHP_TZ=${PHP_TZ}
+
+    export DB_SERVER_TYPE="MYSQL"
+    export DB_SERVER_HOST=${DB_SERVER_HOST}
+    export DB_SERVER_PORT=${DB_SERVER_PORT}
+    export DB_SERVER_DBNAME=${DB_SERVER_DBNAME}
+    export DB_SERVER_SCHEMA=${DB_SERVER_SCHEMA}
+    export DB_SERVER_USER=${DB_SERVER_ZBX_USER}
+    export DB_SERVER_PASS=${DB_SERVER_ZBX_PASS}
+    export ZBX_SERVER_HOST=${ZBX_SERVER_HOST}
+    export ZBX_SERVER_PORT=${ZBX_SERVER_PORT}
+    export ZBX_SERVER_NAME=${ZBX_SERVER_NAME}
+
+    : ${ZBX_DB_ENCRYPTION:="false"}
+    export ZBX_DB_ENCRYPTION=${ZBX_DB_ENCRYPTION,,}
+    export ZBX_DB_KEY_FILE=${ZBX_DB_KEY_FILE}
+    export ZBX_DB_CERT_FILE=${ZBX_DB_CERT_FILE}
+    export ZBX_DB_CA_FILE=${ZBX_DB_CA_FILE}
+    : ${ZBX_DB_VERIFY_HOST:="false"}
+    export ZBX_DB_VERIFY_HOST=${ZBX_DB_VERIFY_HOST,,}
+
+    : ${DB_DOUBLE_IEEE754:="true"}
+    export DB_DOUBLE_IEEE754=${DB_DOUBLE_IEEE754,,}
+
+    export ZBX_HISTORYSTORAGEURL=${ZBX_HISTORYSTORAGEURL}
+    export ZBX_HISTORYSTORAGETYPES=${ZBX_HISTORYSTORAGETYPES:-"[]"}
+
+    export ZBX_SSO_SETTINGS=${ZBX_SSO_SETTINGS:-""}
+}
+
+prepare_zbx_config() {
+    if [ -n "${ZBX_SESSION_NAME}" ]; then
+        cp "$ZABBIX_WWW_ROOT/include/defines.inc.php" "/tmp/defines.inc.php_tmp"
+        sed "/ZBX_SESSION_NAME/s/'[^']*'/'${ZBX_SESSION_NAME}'/2" "/tmp/defines.inc.php_tmp" > "$ZABBIX_WWW_ROOT/include/defines.inc.php"
+        rm -f "/tmp/defines.inc.php_tmp"
+    fi
+}
+
 #################################################
 
 echo "** Deploying Zabbix web-interface (Nginx) with MySQL database"
 
 check_variables
 check_db_connect
+prepare_zbx_php_config
 prepare_web_server
-prepare_zbx_web_config
+prepare_zbx_config
 
 echo "########################################################"
 
