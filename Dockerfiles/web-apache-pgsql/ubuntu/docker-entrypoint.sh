@@ -179,7 +179,7 @@ prepare_web_server() {
         export APACHE_SERVER_SIGNATURE="Off"
     fi
 
-    mkdir -p /tmp/httpd
+    mkdir -p /tmp/apache2
 }
 
 prepare_zbx_php_config() {
