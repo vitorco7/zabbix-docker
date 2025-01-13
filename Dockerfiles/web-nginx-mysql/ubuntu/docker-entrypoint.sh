@@ -26,7 +26,7 @@ fi
 
 # Default directories
 # Nginx main configuration file
-NGINX_MAIN_FILE="/etc/nginx/nginx.conf"
+NGINX_CONF_FILE="/etc/nginx/nginx.conf"
 # Nginx virtual hosts configuration directory
 NGINX_CONFD_DIR="/etc/nginx/http.d"
 # Directory with SSL certificate files for Nginx
