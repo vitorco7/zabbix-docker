@@ -3,7 +3,7 @@ services:
   build:
    context: ./Dockerfiles/build-base/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
   image: ${BUILD_BASE_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -15,8 +15,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${UBUNTU_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -30,8 +28,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${UBUNTU_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -47,8 +43,6 @@ services:
    additional_contexts:
     - sources=./sources/
     - config_templates=./config_templates/
-   cache_from:
-    - "${UBUNTU_CACHE_FROM}"
    args:
     BUILD_BASE_IMAGE: ${BUILD_BASE_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
   image: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -65,7 +59,7 @@ services:
   build:
    context: ./Dockerfiles/server-pgsql/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -83,7 +77,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-sqlite3/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_SQLITE3_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -100,7 +94,7 @@ services:
   build:
    context: ./Dockerfiles/proxy-mysql/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -112,13 +106,14 @@ services:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
  zabbix-web-apache-pgsql:
+  user: root
   extends:
    file: compose_zabbix_components.yaml
    service: web-apache-pgsql
   build:
    context: ./Dockerfiles/web-apache-pgsql/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -136,7 +131,7 @@ services:
   build:
    context: ./Dockerfiles/web-nginx-pgsql/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_PGSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -154,7 +149,7 @@ services:
   build:
    context: ./Dockerfiles/agent/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -171,7 +166,7 @@ services:
   build:
    context: ./Dockerfiles/java-gateway/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -188,7 +183,7 @@ services:
   build:
    context: ./Dockerfiles/snmptraps/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
@@ -204,7 +199,7 @@ services:
   build:
    context: ./Dockerfiles/web-service/${UBUNTU_OS_TAG_SHORT}
    cache_from:
-    - "${UBUNTU_CACHE_FROM}"
+    - "${UBUNTU_BASE_IMAGE}"
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
     BUILD_BASE_IMAGE: ${BUILD_BASE_MYSQL_IMAGE}:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
