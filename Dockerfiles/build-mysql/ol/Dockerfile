@@ -94,9 +94,9 @@ RUN --mount=type=cache,target=/root/.cache/go-build/ \
             --with-ssh \
             --with-unixodbc \
             --silent && \
-    make -j"$(nproc)" -s dbschema && \
+    make -s dbschema && \
     make -j"$(nproc)" -s && \
-    make -j"$(nproc)" -s gettext && \
+    make -s gettext && \
     cat database/${DB_TYPE}/schema.sql > database/${DB_TYPE}/create.sql && \
     gzip -c database/${DB_TYPE}/create.sql > ${ZBX_OUTPUT_DIR}/proxy/database/${DB_TYPE}/create.sql.gz && \
     cat database/${DB_TYPE}/images.sql >> database/${DB_TYPE}/create.sql && \

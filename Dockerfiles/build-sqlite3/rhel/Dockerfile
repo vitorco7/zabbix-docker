@@ -97,7 +97,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build/ \
             --with-ssh \
             --with-unixodbc \
             --silent && \
-    make -j"$(nproc)" -s dbschema && \
+    make -s dbschema && \
     make -j"$(nproc)" -s && \
     mkdir /tmp/fonts/ && \
     curl --tlsv1.2 -sSf -L "https://noto-website-2.storage.googleapis.com/pkgs/NotoSansCJKjp-hinted.zip" -o /tmp/fonts/NotoSansCJKjp-hinted.zip && \
