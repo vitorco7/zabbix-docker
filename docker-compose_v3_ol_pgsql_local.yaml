@@ -198,8 +198,6 @@ services:
    args:
     OS_BASE_IMAGE: ${OL_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-  depends_on:
-   - zabbix-build-pgsql
   labels:
    com.zabbix.os: "${OL_OS_TAG}"
 

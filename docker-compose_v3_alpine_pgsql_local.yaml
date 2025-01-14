@@ -198,8 +198,6 @@ services:
    args:
     OS_BASE_IMAGE: ${ALPINE_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-  depends_on:
-   - zabbix-build-pgsql
   labels:
    com.zabbix.os: "${ALPINE_OS_TAG}"
 
