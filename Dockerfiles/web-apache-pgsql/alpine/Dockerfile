@@ -84,6 +84,7 @@ RUN set -eux && \
     rm -f "/etc/apache2/conf.d/info.conf" && \
     rm -f "/etc/apache2/conf.d/mpm.conf" && \
     rm -f "/etc/apache2/conf.d/proxy.conf" && \
+    rm -f "/etc/apache2/conf.d/languages.conf" && \
     rm -f "/etc/apache2/conf.d/userdir.conf" && \
     mkdir -p /var/lib/php/session && \
     rm -rf /etc/php7/php-fpm.d/www.conf && \
