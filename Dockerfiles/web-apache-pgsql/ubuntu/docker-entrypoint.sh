@@ -24,6 +24,9 @@ fi
 : ${DAEMON_USER:="www-data"}
 : ${DAEMON_GROUP:="www-data"}
 
+# DefaultRuntimeDir configuration option value
+export APACHE_RUN_DIR="/tmp/apache2"
+
 # Default directories
 # Apache main configuration file
 HTTPD_CONF_FILE="/etc/apache2/apache2.conf"
@@ -181,7 +184,7 @@ prepare_web_server() {
         export APACHE_SERVER_SIGNATURE="Off"
     fi
 
-    mkdir -p /tmp/apache2
+    mkdir -p "${APACHE_RUN_DIR}"
 }
 
 prepare_zbx_php_config() {
