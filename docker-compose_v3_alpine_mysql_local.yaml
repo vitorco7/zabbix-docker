@@ -174,8 +174,6 @@ services:
    cache_from:
     - "${ALPINE_CACHE_FROM}"
   image: zabbix-snmptraps:${ZABBIX_ALPINE_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-  depends_on:
-   - zabbix-build-mysql
   labels:
    com.zabbix.os: "${ALPINE_OS_TAG}"
 

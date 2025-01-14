@@ -175,8 +175,6 @@ services:
    cache_from:
     - "${OL_CACHE_FROM}"
   image: zabbix-snmptraps:${ZABBIX_OL_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-  depends_on:
-   - zabbix-build-mysql
   labels:
    com.zabbix.os: "${OL_OS_TAG}"
 
