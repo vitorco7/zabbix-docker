@@ -184,8 +184,6 @@ services:
    args:
     OS_BASE_IMAGE: ${UBUNTU_BASE_IMAGE}
   image: zabbix-snmptraps:${ZABBIX_UBUNTU_IMAGE_TAG}${ZABBIX_LOCAL_IMAGE_TAG_POSTFIX}
-  depends_on:
-   - zabbix-build-pgsql
   labels:
    com.zabbix.os: "${UBUNTU_OS_TAG}"
 
