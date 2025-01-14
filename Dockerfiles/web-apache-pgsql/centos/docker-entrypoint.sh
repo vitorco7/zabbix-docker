@@ -21,6 +21,9 @@ fi
 # Default user settings
 : ${DAEMON_USER:="apache"}
 : ${DAEMON_GROUP:="apache"}
+
+# DefaultRuntimeDir configuration option value
+export APACHE_RUN_DIR="/tmp/httpd"
     
 # Default directories
 # Apache main configuration file
@@ -179,7 +182,7 @@ prepare_web_server() {
         export APACHE_SERVER_SIGNATURE="Off"
     fi
 
-    mkdir -p /tmp/httpd
+    mkdir -p "${APACHE_RUN_DIR}"
 }
 
 prepare_zbx_php_config() {
