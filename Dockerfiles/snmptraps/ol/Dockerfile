@@ -13,6 +13,8 @@ ENV TERM=xterm \
     ZBX_SNMP_TRAP_USE_DNS=false \
     ZABBIX_USER_HOME_DIR="/var/lib/zabbix"
 
+ENV SNMP_PERSISTENT_DIR="${ZABBIX_USER_HOME_DIR}/snmptrapd_config"
+
 LABEL org.opencontainers.image.authors="Alexey Pustovalov <alexey.pustovalov@zabbix.com>" \
       org.opencontainers.image.description="Zabbix SNMP traps receiver" \
       org.opencontainers.image.documentation="https://www.zabbix.com/documentation/${MAJOR_VERSION}/manual/installation/containers" \
@@ -53,7 +55,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
     mkdir -p ${ZABBIX_USER_HOME_DIR} && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/snmptraps && \
     mkdir -p ${ZABBIX_USER_HOME_DIR}/mibs && \
-    touch /var/lib/net-snmp/snmptrapd.conf && \
+    mkdir -p ${SNMP_PERSISTENT_DIR} && \
     chown --quiet -R zabbix:root /etc/snmp/ ${ZABBIX_USER_HOME_DIR}/ /var/tmp/ /var/run/ && \
     chgrp -R 0 /etc/snmp/ ${ZABBIX_USER_HOME_DIR}/ /var/tmp/ /var/run/ && \
     chmod -R g=u /etc/snmp/ ${ZABBIX_USER_HOME_DIR}/ /var/tmp/ /var/run/
@@ -62,7 +64,7 @@ EXPOSE 1162/UDP
 
 WORKDIR ${ZABBIX_USER_HOME_DIR}/snmptraps/
 
-VOLUME ["${ZABBIX_USER_HOME_DIR}/snmptraps"]
+VOLUME ["${ZABBIX_USER_HOME_DIR}/snmptraps", "${SNMP_PERSISTENT_DIR}"]
 
 COPY ["conf/etc/logrotate.d/zabbix_snmptraps", "/etc/logrotate.d/"]
 COPY ["conf/etc/snmp/snmptrapd.conf", "/etc/snmp/"]

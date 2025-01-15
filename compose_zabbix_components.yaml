@@ -630,6 +630,7 @@ services:
   read_only: true
   volumes:
    - snmptraps:/var/lib/zabbix/snmptraps:rwz
+   - ${DATA_DIRECTORY}/var/lib/zabbix/snmptrapd_config:/var/lib/zabbix/snmptrapd_config:rw
   tmpfs: /tmp
   deploy:
    resources:
