@@ -28,7 +28,7 @@ fi
 # Nginx main configuration file
 NGINX_CONF_FILE="/etc/nginx/nginx.conf"
 # Nginx virtual hosts configuration directory
-NGINX_CONFD_DIR="/etc/nginx/http.d"
+NGINX_CONFD_DIR="/etc/nginx/conf.d"
 # Directory with SSL certificate files for Nginx
 NGINX_SSL_CONFIG_DIR="/etc/ssl/nginx"
 # PHP-FPM configuration file
