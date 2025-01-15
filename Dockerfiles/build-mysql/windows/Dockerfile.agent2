@@ -39,8 +39,6 @@ LABEL org.opencontainers.image.title="Zabbix agent 2 build (Windows)" `
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
-
 RUN Set-Location -Path $env:SystemDrive\.; `
     `
     New-Item -ItemType directory -Path $env:ZBX_SOURCES_DIR | Out-Null; `
