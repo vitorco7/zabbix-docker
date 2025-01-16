@@ -50,6 +50,7 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
             iputils-ping \
             traceroute \
             fping \
+            openssl \
             libcurl4t64 \
             libevent-2.1 \
             libmysqlclient21 \

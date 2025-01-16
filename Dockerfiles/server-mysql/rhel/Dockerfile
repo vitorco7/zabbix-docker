@@ -69,6 +69,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             iputils \
             hostname \
             libcurl \
+            openssl \
             libevent \
             openldap \
             libssh \

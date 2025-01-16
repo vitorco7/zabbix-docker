@@ -70,6 +70,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             libcurl \
             libevent \
             openldap \
+            openssl \
             libssh \
             libxml2 \
             mysql \
