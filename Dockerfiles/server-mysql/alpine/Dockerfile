@@ -52,6 +52,7 @@ RUN set -eux && \
             nmap \
             tzdata \
             iputils \
+            openssl \
             libcap \
             libcurl \
             libevent \

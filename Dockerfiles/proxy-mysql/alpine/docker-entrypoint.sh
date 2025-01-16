@@ -384,6 +384,8 @@ update_zbx_config() {
     else
         export ZBX_ALLOWROOT=1
     fi
+
+    command -v openssl >/dev/null 2>&1 && openssl rehash -v "${ZBX_SSLCALOCATION}" 1>/dev/null
 }
 
 clear_zbx_env() {
