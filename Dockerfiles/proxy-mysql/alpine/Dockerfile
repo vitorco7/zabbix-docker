@@ -44,6 +44,7 @@ RUN set -eux && \
             traceroute \
             nmap \
             iputils \
+            openssl \
             libcap \
             libcurl \
             libevent \

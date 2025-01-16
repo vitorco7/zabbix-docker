@@ -47,6 +47,7 @@ RUN --mount=type=cache,target=/var/cache/apt/,sharing=locked \
             nmap \
             ca-certificates \
             fping \
+            openssl \
             libcurl4t64 \
             libevent-2.1 \
             libevent-pthreads-2.1 \
