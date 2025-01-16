@@ -57,6 +57,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             net-snmp-libs \
             OpenIPMI-libs \
             openldap \
+            openssl \
             openssl-libs \
             pcre2 \
             shadow-utils \
