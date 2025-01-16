@@ -67,6 +67,7 @@ RUN --mount=type=tmpfs,target=/var/lib/dnf/ \
             shadow-utils \
             iputils \
             hostname \
+            openssl \
             libssh \
             libpsl \
             libbrotli \

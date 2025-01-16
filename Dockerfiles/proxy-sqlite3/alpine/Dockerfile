@@ -43,6 +43,7 @@ RUN set -eux && \
             nmap \
             fping \
             iputils \
+            openssl \
             libcap \
             libcurl \
             libevent \
