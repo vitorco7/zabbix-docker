@@ -392,6 +392,12 @@ jobs:
           cache-from: ${{ steps.cache_data.outputs.cache_from }}
           cache-to: ${{ steps.cache_data.outputs.cache_to }}
 
+      - name: Scan for vulnerabilities
+        uses: crazy-max/ghaction-container-scan@v3
+        with:
+          image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
+          annotations: true
+
       - name: Sign the images with GitHub OIDC Token
         if: ${{ env.AUTO_PUSH_IMAGES == 'true' }}
         env:
