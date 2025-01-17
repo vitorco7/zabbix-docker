@@ -62,7 +62,7 @@ function Update-Config-Var {
     }
 
     if ($VarName -match '^TLS.*File$') {
-        $VarValue="$ZabbixUserHomeDir\enc\$VarValue"
+        $VarValue="$env:ZABBIX_USER_HOME_DIR\enc\$VarValue"
     }
 
     if ((Get-Content $ConfigPath | %{$_ -match "^$VarName="}) -contains $true -And $IsMultiple -ne $true) {
