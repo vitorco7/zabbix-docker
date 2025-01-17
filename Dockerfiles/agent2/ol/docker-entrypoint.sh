@@ -133,16 +133,25 @@ prepare_zbx_agent_config() {
     echo "** Preparing Zabbix agent configuration file"
     ZBX_AGENT_CONFIG=${ZABBIX_CONF_DIR}/zabbix_agent2.conf
 
-    : ${ZBX_PASSIVESERVERS:=""}
-    : ${ZBX_ACTIVESERVERS:=""}
+    : ${ZBX_PASSIVESERVERS=""}
+    : ${ZBX_ACTIVESERVERS=""}
 
-    [ -n "$ZBX_PASSIVESERVERS" ] && ZBX_PASSIVESERVERS=","$ZBX_PASSIVESERVERS
+    if [ ! -z "$ZBX_SERVER_HOST" ] && [ ! -z "$ZBX_PASSIVESERVERS" ]; then
+        ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST","$ZBX_PASSIVESERVERS
+    elif [ ! -z "$ZBX_SERVER_HOST" ]; then
+        ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST
+    fi
 
-    ZBX_PASSIVESERVERS=$ZBX_SERVER_HOST$ZBX_PASSIVESERVERS
-
-    [ -n "$ZBX_ACTIVESERVERS" ] && ZBX_ACTIVESERVERS=","$ZBX_ACTIVESERVERS
-
-    ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST":"$ZBX_SERVER_PORT$ZBX_ACTIVESERVERS
+    if [ ! -z "$ZBX_SERVER_HOST" ]; then
+        if [ ! -z "$ZBX_SERVER_PORT" ] && [ "$ZBX_SERVER_PORT" != "10051" ]; then
+            ZBX_SERVER_HOST=$ZBX_SERVER_HOST":"$ZBX_SERVER_PORT
+        fi
+        if [ ! -z "$ZBX_ACTIVESERVERS" ]; then
+            ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST","$ZBX_ACTIVESERVERS
+        else
+            ZBX_ACTIVESERVERS=$ZBX_SERVER_HOST
+        fi
+    fi
 
     update_config_var $ZBX_AGENT_CONFIG "PidFile"
     update_config_var $ZBX_AGENT_CONFIG "LogType" "console"
@@ -152,7 +161,7 @@ prepare_zbx_agent_config() {
     update_config_var $ZBX_AGENT_CONFIG "SourceIP"
 
     : ${ZBX_PASSIVE_ALLOW:="true"}
-    if [ "${ZBX_PASSIVE_ALLOW,,}" == "true" ]; then
+    if [ "${ZBX_PASSIVE_ALLOW,,}" == "true" ] && [ ! -z "$ZBX_PASSIVESERVERS" ]; then
         echo "** Using '$ZBX_PASSIVESERVERS' servers for passive checks"
         update_config_var $ZBX_AGENT_CONFIG "Server" "${ZBX_PASSIVESERVERS}"
     else
@@ -163,7 +172,7 @@ prepare_zbx_agent_config() {
     update_config_var $ZBX_AGENT_CONFIG "ListenIP" "${ZBX_LISTENIP}"
 
     : ${ZBX_ACTIVE_ALLOW:="true"}
-    if [ "${ZBX_ACTIVE_ALLOW,,}" == "true" ]; then
+    if [ "${ZBX_ACTIVE_ALLOW,,}" == "true" ] && [ ! -z "$ZBX_ACTIVESERVERS" ]; then
         echo "** Using '$ZBX_ACTIVESERVERS' servers for active checks"
         update_config_var $ZBX_AGENT_CONFIG "ServerActive" "${ZBX_ACTIVESERVERS}"
     else
